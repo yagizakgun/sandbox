@@ -4,15 +4,15 @@ public class LookAt : TaskBase
 {
 	public Vector3? TargetPosition { get; set; }
 	public GameObject TargetObject { get; set; }
-	public float Speed { get; set; } = 180f;
+	public float Speed { get; set; } = 8f;
 
-	public LookAt( Vector3 targetPosition, float speed = 180f )
+	public LookAt( Vector3 targetPosition, float speed = 8f )
 	{
 		TargetPosition = targetPosition;
 		Speed = speed;
 	}
 
-	public LookAt( GameObject gameObject, float speed = 180f )
+	public LookAt( GameObject gameObject, float speed = 8f )
 	{
 		TargetObject = gameObject;
 		Speed = speed;
@@ -28,7 +28,7 @@ public class LookAt : TaskBase
 			var direction = (targetPos.Value - Npc.WorldPosition).Normal;
 			var targetRotation = Rotation.LookAt( direction );
 
-			var lerpSpeed = Speed * Time.Delta / 180f;
+			var lerpSpeed = Speed * Time.Delta;
 			Npc.SetBodyTarget( Rotation.Lerp( Npc.WorldRotation, targetRotation, lerpSpeed ) );
 
 			await FrameEnd();

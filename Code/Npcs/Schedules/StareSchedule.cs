@@ -5,11 +5,11 @@ namespace Sandbox.Npcs.Schedules;
 /// <summary>
 /// Schedule to stare at a specific target
 /// </summary>
-public class LookAtSchedule : ScheduleBase
+public class StareSchedule : ScheduleBase
 {
 	private GameObject _target;
 
-	public LookAtSchedule( GameObject target )
+	public StareSchedule( GameObject target )
 	{
 		_target = target;
 	}
@@ -19,6 +19,6 @@ public class LookAtSchedule : ScheduleBase
 		if ( !_target.IsValid() )
 			return;
 
-		await ExecuteTask( new LookAt( _target ).CancelWhenNot( "has-target" ) );
+		await ExecuteTask( new LookAt( _target ) { Once = true }.CancelWhenNot( "has-target" ) );
 	}
 }

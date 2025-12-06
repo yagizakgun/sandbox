@@ -268,6 +268,23 @@
           "PersonalSpaceRadius": 100,
           "Priority": 0,
           "TargetTags": "player"
+        },
+        {
+          "__type": "Sandbox.Npcs.NpcAnimator",
+          "__guid": "3eda4ad9-5e57-4b4c-b247-06aa6893c80d",
+          "__enabled": true,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "Target": {
+            "_type": "component",
+            "component_id": "8eac3bab-f892-43ac-9aa1-5850fd5ae5cb",
+            "go": "78bfc3fd-cc81-4f48-b289-64ce74225fbe",
+            "component_type": "SkinnedModelRenderer"
+          }
         }
       ],
       "Children": [

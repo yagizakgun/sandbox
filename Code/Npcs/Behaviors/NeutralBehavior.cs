@@ -98,7 +98,7 @@ public class NeutralBehavior : Behavior
 
 		if ( Conditions.Contains( "has-target" ) && _currentTarget.IsValid() )
 		{
-			return new LookAtSchedule( _currentTarget );
+			return new StareSchedule( _currentTarget );
 		}
 
 		return null;

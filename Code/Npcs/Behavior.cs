@@ -14,6 +14,11 @@ public partial class Behavior : Component
 	private ScheduleBase _currentSchedule;
 
 	/// <summary>
+	/// Get the TaskSource from this component - allows passing to tasks for lifetime management
+	/// </summary>
+	internal TaskSource GetTaskSource() => Task;
+
+	/// <summary>
 	/// Npc calls this every tick to update this behavior -- returns true if we're running a schedule
 	/// </summary>
 	internal bool Update( Npc npc )

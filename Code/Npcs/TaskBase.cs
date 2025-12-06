@@ -26,22 +26,18 @@ public abstract class TaskBase
 	protected Conditions Conditions => Npc.Conditions;
 
 	private TaskSource _taskSource;
-	private CancellationTokenSource _cancellationTokenSource;
 	private readonly List<string> _cancelWhenConditions = new();
 	private readonly List<string> _cancelWhenNotConditions = new();
 	private Task _conditionCheckTask;
+	private bool _cancelled;
 
-	public bool IsCancelled => _cancellationTokenSource?.Token.IsCancellationRequested == true;
+	public bool IsCancelled => _cancelled || !_taskSource.IsValid;
 	public TaskCancelledException TaskCancelledException { get; private set; }
 
-	/// <summary>
-	/// Initialize the task with the Schedule context
-	/// </summary>
 	internal void Initialize( ScheduleBase schedule )
 	{
 		Schedule = schedule;
-		_cancellationTokenSource = new CancellationTokenSource();
-		_taskSource = TaskSource.Create( _cancellationTokenSource.Token );
+		_taskSource = schedule.Behavior.GetTaskSource();
 
 		if ( _cancelWhenConditions.Count > 0 || _cancelWhenNotConditions.Count > 0 )
 		{
@@ -74,7 +70,7 @@ public abstract class TaskBase
 	{
 		try
 		{
-			while ( _taskSource.IsValid )
+			while ( _taskSource.IsValid && !_cancelled )
 			{
 				if ( CheckCancellationConditions() )
 					break;
@@ -82,9 +78,9 @@ public abstract class TaskBase
 				await _taskSource.FrameEnd();
 			}
 		}
-		catch ( TaskCanceledException )
+		catch ( OperationCanceledException )
 		{
-			// Expected when task source is cancelled
+			// Expected when TaskSource is cancelled
 		}
 	}
 
@@ -93,6 +89,13 @@ public abstract class TaskBase
 	/// </summary>
 	private bool CheckCancellationConditions()
 	{
+		// The TaskSource lifetime check eliminates most null reference issues
+		if ( !_taskSource.IsValid )
+		{
+			Cancel( "component-destroyed", false );
+			return true;
+		}
+
 		foreach ( var condition in _cancelWhenConditions )
 		{
 			if ( Conditions.Contains( condition ) )
@@ -114,18 +117,14 @@ public abstract class TaskBase
 		return false;
 	}
 
-	/// <summary>
-	/// Cancel the task with a specific reason
-	/// </summary>
 	public void Cancel( string condition = null, bool wasConditionPresent = false )
 	{
-		if ( _cancellationTokenSource?.IsCancellationRequested == false )
+		if ( !_cancelled )
 		{
+			_cancelled = true;
 			TaskCancelledException = condition != null
 				? new TaskCancelledException( condition, wasConditionPresent )
 				: new TaskCancelledException( "manual", false );
-
-			_cancellationTokenSource.Cancel();
 		}
 	}
 
@@ -145,6 +144,10 @@ public abstract class TaskBase
 				throw TaskCancelledException;
 			}
 			throw;
+		}
+		finally
+		{
+			_cancelled = true;
 		}
 	}
 

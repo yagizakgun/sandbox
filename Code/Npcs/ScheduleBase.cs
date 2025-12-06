@@ -114,10 +114,46 @@ public abstract class ScheduleBase
         }
     }
 
-    /// <summary>
-    /// Execute tasks in sequence until one completes successfully or all are cancelled
-    /// </summary>
-    protected async Task ExecuteTasksUntilSuccess( params TaskBase[] tasks )
+	/// <summary>
+	/// Execute tasks concurrently but complete when the FIRST one finishes
+	/// </summary>
+	protected async Task ExecuteTasksUntilFirst( params TaskBase[] tasks )
+	{
+		var taskList = new List<Task>();
+
+		foreach ( var task in tasks )
+		{
+			task.Initialize( this );
+			taskList.Add( task.ExecuteWithCancellation() );
+		}
+
+		try
+		{
+			await GameTask.WhenAny( taskList );
+		}
+		catch ( TaskCancelledException ex )
+		{
+			// Handle the cancellation
+			var cancelledTask = tasks.FirstOrDefault( t => t.TaskCancelledException?.CancelledCondition == ex.CancelledCondition );
+			if ( cancelledTask != null )
+			{
+				await OnTaskCancelled( cancelledTask, ex.CancelledCondition, ex.WasConditionPresent );
+			}
+		}
+		finally
+		{
+			// Cancel any remaining tasks
+			foreach ( var task in tasks )
+			{
+				task.Cancel();
+			}
+		}
+	}
+
+	/// <summary>
+	/// Execute tasks in sequence until one completes successfully or all are cancelled
+	/// </summary>
+	protected async Task ExecuteTasksUntilSuccess( params TaskBase[] tasks )
     {
         foreach ( var task in tasks )
         {

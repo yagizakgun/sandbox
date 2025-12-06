@@ -1,7 +1,9 @@
-﻿namespace Sandbox.Npcs.Schedules;
+﻿using Sandbox.Npcs.Tasks;
+
+namespace Sandbox.Npcs.Schedules;
 
 /// <summary>
-/// Schedule to move a npc away from a threat
+/// Schedule to move a npc away from a threat while keeping eyes on the threat
 /// </summary>
 public class FleeSchedule : ScheduleBase
 {
@@ -24,20 +26,30 @@ public class FleeSchedule : ScheduleBase
 
 		if ( escape.HasValue )
 		{
-			// Move to the escape position
-			await ExecuteTask( new MoveTo( escape.Value )
-				.CancelWhen( "threat-gone" )
-				.CancelWhen( "new-threat" ) );
+			// Run both movement and looking concurrently
+			await ExecuteTasksUntilFirst(
+				new MoveTo( escape.Value )
+					.CancelWhen( "threat-gone" )
+					.CancelWhen( "new-threat" ),
+				new LookAt( _threatTarget )
+					.CancelWhen( "threat-gone" )
+					.CancelWhen( "new-threat" )
+			);
 		}
 		else
 		{
-			// Can't find escape position, just try to move in opposite direction
+			// Can't find escape position, just try to move in opposite direction while looking at threat
 			var awayDirection = (Npc.WorldPosition - _threatTarget.WorldPosition).Normal;
 			var fallbackPosition = Npc.WorldPosition + awayDirection * _fleeDistance;
 
-			await ExecuteTask( new MoveTo( fallbackPosition )
-				.CancelWhen( "threat-gone" )
-				.CancelWhen( "new-threat" ) );
+			await ExecuteTasksUntilFirst(
+				new MoveTo( fallbackPosition )
+					.CancelWhen( "threat-gone" )
+					.CancelWhen( "new-threat" ),
+				new LookAt( _threatTarget )
+					.CancelWhen( "threat-gone" )
+					.CancelWhen( "new-threat" )
+			);
 		}
 	}
 

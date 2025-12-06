@@ -7,6 +7,9 @@ public partial class Npc : Component
 
 	public Conditions Conditions { get; } = new();
 
+	public Vector3? HeadTarget { get; private set; }
+	public Vector3? EyeTarget { get; private set; }
+
 	protected override void OnDisabled()
 	{
 		foreach ( var behavior in GetComponents<Behavior>() )
@@ -53,11 +56,7 @@ public partial class Npc : Component
 	/// </summary>
 	public void SetEyeTarget( Vector3 aimDirection )
 	{
-		var renderer = GetComponentInChildren<SkinnedModelRenderer>();
-		if ( renderer.IsValid() )
-		{
-			renderer.Set( "aim_eyes", aimDirection );
-		}
+		EyeTarget = aimDirection;
 	}
 
 	/// <summary>
@@ -65,10 +64,22 @@ public partial class Npc : Component
 	/// </summary>
 	public void SetHeadTarget( Vector3 aimDirection )
 	{
-		var renderer = GetComponentInChildren<SkinnedModelRenderer>();
-		if ( renderer.IsValid() )
-		{
-			renderer.Set( "aim_head", aimDirection );
-		}
+		HeadTarget = aimDirection;
+	}
+
+	/// <summary>
+	/// Clear eye target
+	/// </summary>
+	public void ClearEyeTarget()
+	{
+		EyeTarget = null;
+	}
+
+	/// <summary>
+	/// Clear head target
+	/// </summary>
+	public void ClearHeadTarget()
+	{
+		HeadTarget = null;
 	}
 }

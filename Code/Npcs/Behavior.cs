@@ -5,7 +5,8 @@
 /// </summary>
 public partial class Behavior : Component
 {
-	public Npc Npc => GetComponent<Npc>();
+	public Npc Npc { get; private set; }
+
 	public Conditions Conditions => Npc.Conditions;
 
 	[Property] public int Priority { get; set; } = 0;
@@ -15,8 +16,10 @@ public partial class Behavior : Component
 	/// <summary>
 	/// Npc calls this every tick to update this behavior -- returns true if we're running a schedule
 	/// </summary>
-	internal bool Update()
+	internal bool Update( Npc npc )
 	{
+		Npc = npc;
+
 		// Check if we need a new schedule
 		if ( _currentSchedule == null || _currentSchedule.IsCancelled )
 		{

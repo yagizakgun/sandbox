@@ -2,6 +2,9 @@
 
 public partial class Npc : Component
 {
+	[RequireComponent]
+	public NavMeshAgent Agent { get; private set; }
+
 	public Conditions Conditions { get; } = new();
 
 	protected override void OnDisabled()
@@ -21,7 +24,7 @@ public partial class Npc : Component
 
 		foreach ( var behavior in behaviors )
 		{
-			if ( behavior.Update() )
+			if ( behavior.Update( this ) )
 			{
 				break;
 			}

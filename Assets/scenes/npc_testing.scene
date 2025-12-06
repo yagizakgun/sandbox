@@ -221,17 +221,6 @@
       "OwnerTransfer": 1,
       "Components": [
         {
-          "__type": "Sandbox.Npcs.Npc",
-          "__guid": "d2ae8c95-7533-4899-94e4-eafd09b0032a",
-          "__enabled": true,
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null
-        },
-        {
           "__type": "Sandbox.NavMeshAgent",
           "__guid": "3f979c4d-9156-44a2-bbbc-b9fbca6f476f",
           "__enabled": true,
@@ -254,16 +243,29 @@
           "UpdateRotation": false
         },
         {
+          "__type": "Sandbox.Npcs.Npc",
+          "__guid": "12c470dc-9712-42a8-9818-a609e88a8be2",
+          "__enabled": true,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        },
+        {
           "__type": "Sandbox.Npcs.Behaviors.NeutralBehavior",
-          "__guid": "f0455003-680d-4859-a1b2-fe4876ad59dc",
+          "__guid": "541da60a-aca7-46e2-a7db-aa78fb8c1883",
           "__enabled": true,
           "DetectionRadius": 500,
+          "FleeDistance": 250,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
           "OnComponentUpdate": null,
+          "PersonalSpaceRadius": 100,
           "Priority": 0,
           "TargetTags": "player"
         }
@@ -410,7 +412,7 @@
           ],
           "Children": [
             {
-              "__guid": "9832249f-821d-4495-a26f-2f00ee133592",
+              "__guid": "04fb7989-b278-4989-be51-a8666bbf939a",
               "__version": 1,
               "Flags": 0,
               "Name": "Clothing - hair_long_bangs",
@@ -427,7 +429,7 @@
               "Components": [
                 {
                   "__type": "Sandbox.SkinnedModelRenderer",
-                  "__guid": "03e3bcc1-646d-4d04-9a8a-480d2b1d47ce",
+                  "__guid": "b474fc18-4d76-4aaa-b075-6a555f7ca4ca",
                   "__enabled": true,
                   "AnimationGraph": null,
                   "BodyGroups": 18446744073709551615,
@@ -478,7 +480,7 @@
               "Children": []
             },
             {
-              "__guid": "f2b459ca-2bbc-4c70-9568-89298897fa7c",
+              "__guid": "ad179ad3-00fa-409b-b99c-1678299e2fe3",
               "__version": 1,
               "Flags": 0,
               "Name": "Clothing - y_front_pants_red",
@@ -495,7 +497,7 @@
               "Components": [
                 {
                   "__type": "Sandbox.SkinnedModelRenderer",
-                  "__guid": "9f19928e-a824-4e22-9bb1-bbed3609b263",
+                  "__guid": "1e602774-43ac-43ae-a9f1-c25e580dd44f",
                   "__enabled": true,
                   "AnimationGraph": null,
                   "BodyGroups": 18446744073709551615,
@@ -546,7 +548,7 @@
               "Children": []
             },
             {
-              "__guid": "c54f891b-5322-43a0-8a88-14e3616a0e34",
+              "__guid": "35b86f03-9f65-4132-9e9c-e3543506ae61",
               "__version": 1,
               "Flags": 0,
               "Name": "Clothing - boxing_boots",
@@ -563,7 +565,7 @@
               "Components": [
                 {
                   "__type": "Sandbox.SkinnedModelRenderer",
-                  "__guid": "73383cf3-2556-45e3-bfcc-1ee4e8ce3ec7",
+                  "__guid": "e85858e9-6029-4933-be26-ac1088c7e9c2",
                   "__enabled": true,
                   "AnimationGraph": null,
                   "BodyGroups": 18446744073709551615,
@@ -614,7 +616,7 @@
               "Children": []
             },
             {
-              "__guid": "2167a74f-7102-47a0-9c3d-004b331d9613",
+              "__guid": "2cf9c33e-a781-4f77-a70f-87bfc0aa61c9",
               "__version": 1,
               "Flags": 0,
               "Name": "Clothing - blue_shirt",
@@ -631,7 +633,7 @@
               "Components": [
                 {
                   "__type": "Sandbox.SkinnedModelRenderer",
-                  "__guid": "b32e3885-96f7-47b2-b2ce-d40d02259e89",
+                  "__guid": "c276ad08-c6e8-4cb4-90ef-4f29b7896943",
                   "__enabled": true,
                   "AnimationGraph": null,
                   "BodyGroups": 18446744073709551615,
@@ -682,7 +684,7 @@
               "Children": []
             },
             {
-              "__guid": "82c7ac67-da44-4524-9588-405ce378e0c3",
+              "__guid": "884088db-65c5-41f8-ab4b-5428d1963b9f",
               "__version": 1,
               "Flags": 0,
               "Name": "Clothing - labcoat",
@@ -699,7 +701,7 @@
               "Components": [
                 {
                   "__type": "Sandbox.SkinnedModelRenderer",
-                  "__guid": "334a75a3-e18c-4215-8b24-d2e051e417aa",
+                  "__guid": "e6a2e876-ca9a-4dfe-970d-00e2e6a01263",
                   "__enabled": true,
                   "AnimationGraph": null,
                   "BodyGroups": 18446744073709551615,

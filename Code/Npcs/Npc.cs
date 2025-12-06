@@ -1,6 +1,6 @@
 ﻿namespace Sandbox.Npcs;
 
-public partial class Npc : Component
+public sealed class Npc : Component
 {
 	[RequireComponent]
 	public NavMeshAgent Agent { get; private set; }

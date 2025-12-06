@@ -5,7 +5,7 @@ namespace Sandbox.Npcs;
 /// <summary>
 /// Exception thrown when a task is cancelled due to conditions
 /// </summary>
-public class TaskCancelledException : Exception
+public sealed class TaskCancelledException : Exception
 {
 	public string CancelledCondition { get; }
 	public bool WasConditionPresent { get; }

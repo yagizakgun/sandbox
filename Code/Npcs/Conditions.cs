@@ -3,7 +3,7 @@
 /// <summary>
 /// Quick stupid class that holds condition tags for an Npc
 /// </summary>
-public partial class Conditions
+public sealed class Conditions
 {
 	private HashSet<string> _all = new();
 

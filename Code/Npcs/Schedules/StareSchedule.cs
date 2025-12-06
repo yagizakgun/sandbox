@@ -5,7 +5,7 @@ namespace Sandbox.Npcs.Schedules;
 /// <summary>
 /// Schedule to stare at a specific target
 /// </summary>
-public class StareSchedule : ScheduleBase
+public sealed class StareSchedule : ScheduleBase
 {
 	private GameObject _target;
 

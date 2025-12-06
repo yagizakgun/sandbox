@@ -3,7 +3,7 @@
 /// <summary>
 /// Simple npc animator -- uses Citizen anim parameters
 /// </summary>
-public partial class NpcAnimator : Component
+public sealed class NpcAnimator : Component
 {
 	[RequireComponent]
 	protected Npc Npc { get; private set; }

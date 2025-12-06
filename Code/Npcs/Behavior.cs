@@ -3,7 +3,7 @@
 /// <summary>
 /// A behavior for an NPC
 /// </summary>
-public partial class Behavior : Component
+public abstract class Behavior : Component
 {
 	public Npc Npc { get; private set; }
 
@@ -52,10 +52,7 @@ public partial class Behavior : Component
 	/// Query for a schedule - implement this in derived classes
 	/// Return null if this behavior doesn't want to run right now
 	/// </summary>
-	public virtual ScheduleBase QuerySchedule()
-	{
-		return null;
-	}
+	public abstract ScheduleBase QuerySchedule();
 
 	/// <summary>
 	/// Switch to a new schedule

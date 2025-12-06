@@ -5,7 +5,7 @@ namespace Sandbox.Npcs.Schedules;
 /// <summary>
 /// Schedule to move a npc away from a threat while keeping eyes on the threat
 /// </summary>
-public class FleeSchedule : ScheduleBase
+public sealed class FleeSchedule : ScheduleBase
 {
 	private GameObject _threatTarget;
 	private float _fleeDistance;
@@ -26,24 +26,9 @@ public class FleeSchedule : ScheduleBase
 
 		if ( escape.HasValue )
 		{
-			// Run both movement and looking concurrently
-			await ExecuteTasksUntilFirst(
+			await ExecuteParallel( 
+				ExecutionMode.SucceedOnOne,
 				new MoveTo( escape.Value )
-					.CancelWhen( "threat-gone" )
-					.CancelWhen( "new-threat" ),
-				new LookAt( _threatTarget )
-					.CancelWhen( "threat-gone" )
-					.CancelWhen( "new-threat" )
-			);
-		}
-		else
-		{
-			// Can't find escape position, just try to move in opposite direction while looking at threat
-			var awayDirection = (Npc.WorldPosition - _threatTarget.WorldPosition).Normal;
-			var fallbackPosition = Npc.WorldPosition + awayDirection * _fleeDistance;
-
-			await ExecuteTasksUntilFirst(
-				new MoveTo( fallbackPosition )
 					.CancelWhen( "threat-gone" )
 					.CancelWhen( "new-threat" ),
 				new LookAt( _threatTarget )
@@ -92,7 +77,7 @@ public class FleeSchedule : ScheduleBase
 	private bool IsValidEscapePosition( Vector3 position )
 	{
 		// Is it reachable?
-		var path = Game.ActiveScene.NavMesh.CalculatePath( new Navigation.CalculatePathRequest()
+		var path = Scene.NavMesh.CalculatePath( new Navigation.CalculatePathRequest()
 		{
 			Start = Npc.WorldPosition,
 			Target = position

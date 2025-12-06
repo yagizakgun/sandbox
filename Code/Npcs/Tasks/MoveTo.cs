@@ -3,7 +3,7 @@
 /// <summary>
 /// Move to a location
 /// </summary>
-public class MoveTo : TaskBase
+public sealed class MoveTo : TaskBase
 {
 	public Vector3 TargetPosition { get; set; }
 	public float StopDistance { get; set; } = 10f;

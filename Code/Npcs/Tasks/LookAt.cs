@@ -1,6 +1,6 @@
 ﻿namespace Sandbox.Npcs.Tasks;
 
-public class LookAt : TaskBase
+public sealed class LookAt : TaskBase
 {
 	public Vector3? TargetPosition { get; set; }
 	public GameObject TargetObject { get; set; }
@@ -22,21 +22,17 @@ public class LookAt : TaskBase
 	{
 		while ( !IsLookingAtTarget() && !IsCancelled )
 		{
-			UpdateLookRotation();
+			var targetPos = GetTargetPosition();
+			if ( !targetPos.HasValue ) return;
+
+			var direction = (targetPos.Value - Npc.WorldPosition).Normal;
+			var targetRotation = Rotation.LookAt( direction );
+
+			var lerpSpeed = Speed * Time.Delta;
+			Npc.SetBodyTarget( Rotation.Lerp( Npc.WorldRotation, targetRotation, lerpSpeed ) );
+
 			await FrameEnd();
 		}
-	}
-
-	private void UpdateLookRotation()
-	{
-		var targetPos = GetTargetPosition();
-		if ( !targetPos.HasValue ) return;
-
-		var direction = (targetPos.Value - Npc.WorldPosition).Normal;
-		var targetRotation = Rotation.LookAt( direction );
-
-		var lerpSpeed = Speed * Time.Delta;
-		Npc.SetBodyTarget( Rotation.Lerp( Npc.WorldRotation, targetRotation, lerpSpeed ) );
 	}
 
 	private bool IsLookingAtTarget()
@@ -47,7 +43,7 @@ public class LookAt : TaskBase
 		var direction = (targetPos.Value - Npc.WorldPosition).Normal;
 		var targetRotation = Rotation.LookAt( direction );
 
-		return Npc.WorldRotation.Forward.Dot( targetRotation.Forward ) > 0.999f;
+		return Npc.WorldRotation.Forward.Dot( targetRotation.Forward ) > 0.999f; // crude but it works
 	}
 
 	private Vector3? GetTargetPosition()

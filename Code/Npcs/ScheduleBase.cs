@@ -2,13 +2,35 @@
 
 namespace Sandbox.Npcs;
 
+/// <summary>
+/// Sometimes execution will have different outcomes, for example, when in parallel
+/// </summary>
+public enum ExecutionMode
+{
+	/// <summary>
+	/// Run all tasks until one succeeds.
+	/// </summary>
+	SucceedOnOne,
+
+	/// <summary>
+	/// Run all tasks until they have all succeeded.
+	/// </summary>
+	SucceedOnAll
+}
+
 public abstract class ScheduleBase
 {
     public Behavior Behavior { get; private set; }
-    protected Npc Npc => Behavior.Npc;
-    protected Conditions Conditions => Npc.Conditions;
 
-    private CancellationTokenSource _cancellationTokenSource;
+	//
+	// Some accessors
+	//
+
+	protected Npc Npc => Behavior.Npc;
+	protected Scene Scene => Behavior.Scene;
+	protected Conditions Conditions => Npc.Conditions;
+
+	private CancellationTokenSource _cancellationTokenSource;
     private TaskBase _currentTask;
 
     public bool IsCancelled => _cancellationTokenSource?.Token.IsCancellationRequested == true;
@@ -80,10 +102,10 @@ public abstract class ScheduleBase
         }
     }
 
-    /// <summary>
-    /// Execute multiple tasks concurrently
-    /// </summary>
-    protected async Task ExecuteTasksConcurrently( params TaskBase[] tasks )
+	/// <summary>
+	/// Execute multiple tasks concurrently
+	/// </summary>
+	protected async Task ExecuteParallel( ExecutionMode mode, params TaskBase[] tasks )
     {
         var taskList = new List<Task>();
 
@@ -95,16 +117,17 @@ public abstract class ScheduleBase
 
         try
         {
-            await GameTask.WhenAll( taskList );
-        }
+			if ( mode == ExecutionMode.SucceedOnOne )
+			{
+				await GameTask.WhenAny( taskList );
+			}
+			if ( mode == ExecutionMode.SucceedOnAll )
+			{
+				await GameTask.WhenAll( taskList );
+			}
+		}
         catch ( TaskCancelledException ex )
         {
-            // Cancel all other tasks
-            foreach ( var task in tasks )
-            {
-                task.Cancel();
-            }
-
             // Handle the cancellation
             var cancelledTask = tasks.FirstOrDefault( t => t.TaskCancelledException?.CancelledCondition == ex.CancelledCondition );
             if ( cancelledTask != null )
@@ -112,34 +135,6 @@ public abstract class ScheduleBase
                 await OnTaskCancelled( cancelledTask, ex.CancelledCondition, ex.WasConditionPresent );
             }
         }
-    }
-
-	/// <summary>
-	/// Execute tasks concurrently but complete when the FIRST one finishes
-	/// </summary>
-	protected async Task ExecuteTasksUntilFirst( params TaskBase[] tasks )
-	{
-		var taskList = new List<Task>();
-
-		foreach ( var task in tasks )
-		{
-			task.Initialize( this );
-			taskList.Add( task.ExecuteWithCancellation() );
-		}
-
-		try
-		{
-			await GameTask.WhenAny( taskList );
-		}
-		catch ( TaskCancelledException ex )
-		{
-			// Handle the cancellation
-			var cancelledTask = tasks.FirstOrDefault( t => t.TaskCancelledException?.CancelledCondition == ex.CancelledCondition );
-			if ( cancelledTask != null )
-			{
-				await OnTaskCancelled( cancelledTask, ex.CancelledCondition, ex.WasConditionPresent );
-			}
-		}
 		finally
 		{
 			// Cancel any remaining tasks
@@ -149,27 +144,6 @@ public abstract class ScheduleBase
 			}
 		}
 	}
-
-	/// <summary>
-	/// Execute tasks in sequence until one completes successfully or all are cancelled
-	/// </summary>
-	protected async Task ExecuteTasksUntilSuccess( params TaskBase[] tasks )
-    {
-        foreach ( var task in tasks )
-        {
-            try
-            {
-                await ExecuteTask( task );
-                return;
-            }
-            catch ( TaskCancelledException )
-            {
-                continue;
-            }
-        }
-
-        throw new TaskCancelledException( "all", true );
-    }
 
     /// <summary>
     /// Called when a task is cancelled due to conditions

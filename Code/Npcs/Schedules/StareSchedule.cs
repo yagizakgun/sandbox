@@ -19,6 +19,6 @@ public class StareSchedule : ScheduleBase
 		if ( !_target.IsValid() )
 			return;
 
-		await ExecuteTask( new LookAt( _target ) { Once = true }.CancelWhenNot( "has-target" ) );
+		await ExecuteTask( new LookAt( _target ).CancelWhenNot( "has-target" ) );
 	}
 }

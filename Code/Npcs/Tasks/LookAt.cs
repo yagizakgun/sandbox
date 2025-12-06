@@ -5,7 +5,6 @@ public class LookAt : TaskBase
 	public Vector3? TargetPosition { get; set; }
 	public GameObject TargetObject { get; set; }
 	public float Speed { get; set; } = 8f;
-	public bool Once { get; set; } = true;
 
 	public LookAt( Vector3 targetPosition, float speed = 8f )
 	{
@@ -17,28 +16,14 @@ public class LookAt : TaskBase
 	{
 		TargetObject = gameObject;
 		Speed = speed;
-		Once = false; 
 	}
 
 	public override async Task Execute()
 	{
-		if ( !Once )
+		while ( !IsLookingAtTarget() && !IsCancelled )
 		{
-			// Continuous tracking - never completes, only stops when cancelled
-			while ( !IsCancelled )
-			{
-				UpdateLookRotation();
-				await FrameEnd();
-			}
-		}
-		else
-		{
-			// One-time look - completes when aligned
-			while ( !IsLookingAtTarget() && !IsCancelled )
-			{
-				UpdateLookRotation();
-				await FrameEnd();
-			}
+			UpdateLookRotation();
+			await FrameEnd();
 		}
 	}
 

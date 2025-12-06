@@ -10,25 +10,23 @@ public class NeutralBehavior : Behavior
 	[Property] public float DetectionRadius { get; set; } = 500f;
 	[Property] public float PersonalSpaceRadius { get; set; } = 100f;
 	[Property] public float FleeDistance { get; set; } = 250f;
-	[Property] public TagSet TargetTags { get; set; } = new() { "player" };
+	[Property] public TagSet TargetTags { get; set; } = [ "player" ];
+	[Property] public float ScanFrequency { get; set; } = 0.5f;
 
 	private GameObject _currentTarget;
-	private TimeSince _lastTargetScan;
+	private TimeUntil _scanTime;
 
 	protected override void OnUpdate()
 	{
-		// Scan for targets every half second, this is shittty and temporary!!!!!!
-		if ( _lastTargetScan > 0.5f )
-		{
-			Scan();
-			_lastTargetScan = 0;
-		}
-
-		base.OnUpdate();
+		if ( !_scanTime ) return;
+		
+		Scan();
 	}
 
 	private void Scan()
 	{
+		_scanTime = ScanFrequency;
+
 		var nearbyObjects = Scene.FindInPhysics( new Sphere( Npc.WorldPosition, DetectionRadius ) );
 
 		GameObject closestTarget = null;
@@ -80,7 +78,7 @@ public class NeutralBehavior : Behavior
 
 	private bool HasLineOfSight( GameObject target )
 	{
-		// TODO: eye target interface
+		// TODO: IEyeTarget or something
 		var trace = Scene.Trace.Ray( Npc.WorldPosition + Vector3.Up * 64, target.WorldPosition + Vector3.Up * 64 )
 			.IgnoreGameObjectHierarchy( Npc.GameObject )
 			.WithoutTags( "trigger" )

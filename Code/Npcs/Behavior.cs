@@ -71,10 +71,9 @@ public abstract class Behavior : Component
 	}
 
 	/// <summary>
-	/// Query for a schedule.
-	/// Return null if this behavior doesn't want to run right now
+	/// Run this behavior -- return a schedule to run. This can happily return null if there's nothing to do.
 	/// </summary>
-	public abstract ScheduleBase QuerySchedule();
+	public abstract ScheduleBase Run();
 
 	/// <summary>
 	/// Updates a behavior, returns if there is an active schedule - this will stop lower priority behaviors from running
@@ -85,7 +84,6 @@ public abstract class Behavior : Component
 	{
 		UpdateSchedule();
 
-		// Always update layers (they provide continuous services)
 		foreach ( var layer in _layers.Values )
 		{
 			layer.Update();
@@ -99,46 +97,45 @@ public abstract class Behavior : Component
 	/// </summary>
 	private void UpdateSchedule()
 	{
-		// check for higher priority schedules - even if current one is running
-		var newSchedule = QuerySchedule();
+		var newSchedule = Run();
 
-		// if it's higher priority - interrupt current
-		if ( _currentSchedule is not null && newSchedule is not null && newSchedule != _currentSchedule )
+		if ( ShouldStartSchedule( newSchedule ) )
+		{
+			StartSchedule( newSchedule );
+			return;
+		}
+
+		UpdateCurrentSchedule();
+	}
+
+	private bool ShouldStartSchedule( ScheduleBase newSchedule )
+	{
+		if ( newSchedule is null )
+			return false;
+
+		if ( _currentSchedule is null )
+			return true;
+
+		return newSchedule != _currentSchedule;
+	}
+
+	/// <summary>
+	/// Updates the currently running schedule
+	/// </summary>
+	private void UpdateCurrentSchedule()
+	{
+		if ( _currentSchedule is null )
+			return;
+
+		if ( !_scheduleStarted )
+		{
+			_currentSchedule.InternalStart();
+			_scheduleStarted = true;
+		}
+
+		if ( _currentSchedule.OnUpdate() is not TaskStatus.Running )
 		{
 			EndCurrentSchedule();
-			StartSchedule( newSchedule );
-			return;
-		}
-
-		// No current schedule? Start new
-		if ( _currentSchedule is null && newSchedule is not null )
-		{
-			StartSchedule( newSchedule );
-			return;
-		}
-
-		// Update current schedule
-		if ( _currentSchedule is not null )
-		{
-			if ( !_scheduleStarted )
-			{
-				_currentSchedule.InternalStart();
-				_scheduleStarted = true;
-			}
-
-			var status = _currentSchedule.OnUpdate();
-
-			switch ( status )
-			{
-				case TaskStatus.Success:
-				case TaskStatus.Failed:
-				case TaskStatus.Interrupted:
-					EndCurrentSchedule();
-					break;
-				case TaskStatus.Running:
-					// Continue running
-					break;
-			}
 		}
 	}
 

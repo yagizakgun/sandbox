@@ -23,7 +23,7 @@ public class ScientistBehavior : Behavior
 		AddLayer<LookAtLayer>();
 	}
 
-	public override ScheduleBase QuerySchedule()
+	public override ScheduleBase Run()
 	{
 		var senses = Layer<SensesLayer>();
 

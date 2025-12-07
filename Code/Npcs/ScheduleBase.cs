@@ -43,31 +43,24 @@ public abstract class ScheduleBase
 	/// </summary>
 	internal TaskStatus OnUpdate()
 	{
-		if ( _tasks.Count == 0 )
-			return TaskStatus.Failed;
-
-		if ( _currentTaskIndex >= _tasks.Count )
-			return TaskStatus.Success; // All tasks completed
+		if ( _tasks.Count == 0 ) return TaskStatus.Failed;
+		if ( _currentTaskIndex >= _tasks.Count ) return TaskStatus.Success;
 
 		var currentTask = _tasks[_currentTaskIndex];
 		var status = currentTask.InternalUpdate();
 
-		switch ( status )
+		if ( status is not TaskStatus.Running )
 		{
-			case TaskStatus.Success:
-				// Move to next task
-				currentTask.InternalEnd();
+			currentTask.InternalEnd();
+
+			if ( status is TaskStatus.Success )
+			{
 				_currentTaskIndex++;
 				StartCurrentTask();
 				return TaskStatus.Running;
+			}
 
-			case TaskStatus.Failed:
-			case TaskStatus.Interrupted:
-				currentTask.InternalEnd();
-				return status;
-
-			case TaskStatus.Running:
-				return TaskStatus.Running;
+			return status;
 		}
 
 		return TaskStatus.Running;

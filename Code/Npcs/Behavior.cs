@@ -1,93 +1,160 @@
-﻿namespace Sandbox.Npcs;
+﻿using Sandbox.Npcs.Layers;
+
+namespace Sandbox.Npcs;
 
 /// <summary>
-/// A behavior for an NPC
+/// A behavior for an NPC - manages schedules, layers provide services to tasks
 /// </summary>
 public abstract class Behavior : Component
 {
-	public Npc Npc { get; private set; }
-
-	public Conditions Conditions => Npc.Conditions;
-
 	[Property] public int Priority { get; set; } = 0;
 
+	public Npc Npc { get; private set; }
+
+	protected Dictionary<Type, BehaviorLayer> Layers { get; private set; } = new();
+
 	private ScheduleBase _currentSchedule;
+	private bool _scheduleStarted;
 
 	/// <summary>
-	/// Get the TaskSource from this component - allows passing to tasks for lifetime management
+	/// Add a layer to this behavior
 	/// </summary>
-	internal TaskSource GetTaskSource() => Task;
+	protected T AddLayer<T>() where T : BehaviorLayer, new()
+	{
+		var layer = new T();
+		Layers[typeof( T )] = layer;
+		return layer;
+	}
 
 	/// <summary>
-	/// Npc calls this every tick to update this behavior -- returns true if we're running a schedule
+	/// Get a layer of specific type
+	/// </summary>
+	public T GetLayer<T>() where T : BehaviorLayer
+	{
+		return Layers.TryGetValue( typeof( T ), out var layer ) ? layer as T : null;
+	}
+
+	/// <summary>
+	/// Npc calls this every tick to update this behavior
 	/// </summary>
 	internal bool Update( Npc npc )
 	{
 		Npc = npc;
 
-		// Check if we need a new schedule
-		if ( _currentSchedule == null || _currentSchedule.IsCancelled )
+		// Initialize layers if needed
+		if ( Npc.IsValid() )
 		{
-			var newSchedule = QuerySchedule();
-			if ( newSchedule != null )
+			foreach ( var layer in Layers.Values )
 			{
-				SwitchToSchedule( newSchedule );
-				return true;
+				layer.Initialize( Npc );
 			}
-			return false;
 		}
 
-		return true;
+		UpdateSchedule();
+
+		// Always update layers (they provide continuous services)
+		foreach ( var layer in Layers.Values )
+		{
+			layer.Update();
+		}
+
+		return _currentSchedule is not null;
 	}
 
 	/// <summary>
-	/// Cancel this behavior's current schedule
+	/// Update the current schedule
+	/// </summary>
+	private void UpdateSchedule()
+	{
+		// check for higher priority schedules - even if current one is running
+		var newSchedule = QuerySchedule();
+
+		// if it's higher priority - interrupt current
+		if ( _currentSchedule is not null && newSchedule is not null &&
+			 newSchedule.GetType() != _currentSchedule.GetType() )
+		{
+			Log.Info( $"Interrupting {_currentSchedule} for {newSchedule}" );
+			EndCurrentSchedule();
+			StartSchedule( newSchedule );
+			return;
+		}
+
+		// No current schedule? Start new
+		if ( _currentSchedule is null && newSchedule is not null )
+		{
+			StartSchedule( newSchedule );
+			return;
+		}
+
+		// Update current schedule
+		if ( _currentSchedule is not null )
+		{
+			if ( !_scheduleStarted )
+			{
+				_currentSchedule.InternalStart();
+				_scheduleStarted = true;
+			}
+
+			var status = _currentSchedule.OnUpdate();
+
+			switch ( status )
+			{
+				case TaskStatus.Success:
+				case TaskStatus.Failed:
+				case TaskStatus.Interrupted:
+					EndCurrentSchedule();
+					break;
+				case TaskStatus.Running:
+					// Continue running
+					break;
+			}
+		}
+	}
+
+	/// <summary>
+	/// Cancel this behavior
 	/// </summary>
 	internal void Cancel()
 	{
-		_currentSchedule?.Cancel();
+		EndCurrentSchedule();
+
+		// Reset all layers to default state
+		foreach ( var layer in Layers.Values )
+		{
+			layer.Reset();
+		}
 	}
 
 	/// <summary>
-	/// Query for a schedule - implement this in derived classes
+	/// Query for a schedule.
 	/// Return null if this behavior doesn't want to run right now
 	/// </summary>
 	public abstract ScheduleBase QuerySchedule();
 
 	/// <summary>
-	/// Switch to a new schedule
+	/// Start a new schedule
 	/// </summary>
-	private async void SwitchToSchedule( ScheduleBase newSchedule )
+	private void StartSchedule( ScheduleBase newSchedule )
 	{
-		// Cancel current schedule
-		_currentSchedule?.Cancel();
-
-		// Start new schedule
+		EndCurrentSchedule();
 		_currentSchedule = newSchedule;
 		_currentSchedule.Initialize( this );
+		_scheduleStarted = false;
+	}
 
-		try
+	/// <summary>
+	/// End the current schedule cleanly
+	/// </summary>
+	private void EndCurrentSchedule()
+	{
+		if ( _currentSchedule != null )
 		{
-			await _currentSchedule.ExecuteWithCancellation();
-		}
-		catch ( OperationCanceledException )
-		{
-			// Schedule was cancelled, this is normal
-		}
-		catch ( TaskCancelledException )
-		{
-			// Task-specific cancellation, also normal
-		}
-		catch ( Exception ex )
-		{
-			Log.Error( $"Error executing schedule {newSchedule.GetType().Name} in behavior {GetType().Name}: {ex}" );
-		}
-		finally
-		{
-			if ( _currentSchedule == newSchedule )
+			if ( _scheduleStarted )
 			{
-				_currentSchedule = null;
+				_currentSchedule.InternalEnd();
 			}
+			_currentSchedule = null;
+			_scheduleStarted = false;
 		}
 	}
 }

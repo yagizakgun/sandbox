@@ -1,26 +1,39 @@
-﻿namespace Sandbox.Npcs;
+using Sandbox.Npcs.Layers;
+
+namespace Sandbox.Npcs.Tasks;
 
 /// <summary>
-/// Move to a location
+/// Task that commands the LocomotionLayer to move to a target
 /// </summary>
-public sealed class MoveTo : TaskBase
+public class MoveTo : TaskBase
 {
-	public Vector3 Target { get; set; }
-	public float Distance { get; set; } = 10f;
+	public Vector3 TargetPosition { get; set; }
+	public float StopDistance { get; set; } = 10f;
+
+	private LocomotionLayer _locomotion;
 
 	public MoveTo( Vector3 targetPosition, float stopDistance = 10f )
 	{
-		Target = targetPosition;
-		Distance = stopDistance;
+		TargetPosition = targetPosition;
+		StopDistance = stopDistance;
 	}
 
-	public override async Task Execute()
+	protected override void OnStart()
 	{
-		Npc.Agent.MoveTo( Target );
+		_locomotion = GetLayer<LocomotionLayer>();
 
-		while ( Npc.WorldPosition.Distance( Target ) > Distance )
+		if ( _locomotion is not null )
 		{
-			await FrameEnd();
+			_locomotion.MoveTo( TargetPosition, StopDistance );
 		}
+	}
+
+	protected override TaskStatus OnUpdate()
+	{
+		if ( _locomotion is null )
+			return TaskStatus.Failed;
+
+		// Check if we've reached the target
+		return _locomotion.HasReachedTarget() ? TaskStatus.Success : TaskStatus.Running;
 	}
 }

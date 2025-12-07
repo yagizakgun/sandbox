@@ -5,8 +5,6 @@ public sealed class Npc : Component
 	[RequireComponent]
 	public NavMeshAgent Agent { get; private set; }
 
-	public Conditions Conditions { get; } = new();
-
 	public Vector3? HeadTarget { get; private set; }
 	public Vector3? EyeTarget { get; private set; }
 
@@ -20,6 +18,9 @@ public sealed class Npc : Component
 
 	protected override void OnUpdate()
 	{
+		if ( IsProxy )
+			return;
+
 		//
 		// Iterate through behaviors by priority - stop at first one that's running
 		//

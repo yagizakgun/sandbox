@@ -1,165 +1,122 @@
-﻿using System.Threading;
-
-namespace Sandbox.Npcs;
+﻿namespace Sandbox.Npcs;
 
 /// <summary>
-/// Sometimes execution will have different outcomes, for example, when in parallel
+/// Base class for NPC schedules
 /// </summary>
-public enum ExecutionMode
-{
-	/// <summary>
-	/// Run all tasks until one succeeds.
-	/// </summary>
-	SucceedOnOne,
-
-	/// <summary>
-	/// Run all tasks until they have all succeeded.
-	/// </summary>
-	SucceedOnAll
-}
-
 public abstract class ScheduleBase
 {
-    public Behavior Behavior { get; private set; }
+	public Behavior Behavior { get; private set; }
 
-	//
-	// Some accessors
-	//
-
+	// Accessors
 	protected Npc Npc => Behavior.Npc;
-	protected Scene Scene => Behavior.Scene;
-	protected Conditions Conditions => Npc.Conditions;
 
-	private CancellationTokenSource _cancellationTokenSource;
-    private TaskBase _currentTask;
-
-    public bool IsCancelled => _cancellationTokenSource?.Token.IsCancellationRequested == true;
-
-    /// <summary>
-    /// Initialize the schedule with the Behavior context
-    /// </summary>
-    internal void Initialize( Behavior behavior )
-    {
-        Behavior = behavior;
-        _cancellationTokenSource = new CancellationTokenSource();
-    }
-
-    /// <summary>
-    /// Cancel the entire schedule
-    /// </summary>
-    public void Cancel()
-    {
-        _currentTask?.Cancel();
-        _cancellationTokenSource?.Cancel();
-    }
-
-    /// <summary>
-    /// Execute the schedule and handle its cancellation
-    /// </summary>
-    public async Task ExecuteWithCancellation()
-    {
-        try
-        {
-            await Execute();
-        }
-        catch ( OperationCanceledException )
-        {
-            // Schedule was cancelled
-            throw;
-        }
-        finally
-        {
-            _cancellationTokenSource?.Dispose();
-            _cancellationTokenSource = null;
-        }
-    }
-
-    /// <summary>
-    /// Execute the schedule
-    /// </summary>
-    public abstract Task Execute();
-
-    /// <summary>
-    /// Execute a task and handle its cancellation
-    /// </summary>
-    protected async Task ExecuteTask( TaskBase task )
-    {
-        task.Initialize( this );
-        _currentTask = task;
-
-        try
-        {
-            await task.ExecuteWithCancellation();
-        }
-        catch ( TaskCancelledException ex )
-        {
-            // Handle task cancellation
-            await OnTaskCancelled( task, ex.CancelledCondition, ex.WasConditionPresent );
-        }
-        finally
-        {
-            _currentTask = null;
-        }
-    }
+	private List<TaskBase> _tasks = new();
+	private int _currentTaskIndex = 0;
+	private bool _started;
 
 	/// <summary>
-	/// Execute multiple tasks concurrently
+	/// Initialize the schedule with the Behavior context
 	/// </summary>
-	protected async Task ExecuteParallel( ExecutionMode mode, params TaskBase[] tasks )
-    {
-        var taskList = new List<Task>();
-
-        foreach ( var task in tasks )
-        {
-            task.Initialize( this );
-            taskList.Add( task.ExecuteWithCancellation() );
-        }
-
-        try
-        {
-			if ( mode == ExecutionMode.SucceedOnOne )
-			{
-				await GameTask.WhenAny( taskList );
-			}
-			if ( mode == ExecutionMode.SucceedOnAll )
-			{
-				await GameTask.WhenAll( taskList );
-			}
-		}
-        catch ( TaskCancelledException ex )
-        {
-            // Handle the cancellation
-            var cancelledTask = tasks.FirstOrDefault( t => t.TaskCancelledException?.CancelledCondition == ex.CancelledCondition );
-            if ( cancelledTask != null )
-            {
-                await OnTaskCancelled( cancelledTask, ex.CancelledCondition, ex.WasConditionPresent );
-            }
-        }
-		finally
-		{
-			// Cancel any remaining tasks
-			foreach ( var task in tasks )
-			{
-				task.Cancel();
-			}
-		}
+	internal void Initialize( Behavior behavior )
+	{
+		Behavior = behavior;
+		_tasks.Clear();
+		_currentTaskIndex = 0;
+		_started = false;
 	}
 
-    /// <summary>
-    /// Called when a task is cancelled due to conditions
-    /// Override this to handle task cancellations
-    /// </summary>
-    protected virtual Task OnTaskCancelled( TaskBase task, string condition, bool wasConditionPresent )
-    {
-        Log.Info( $"Task {task.GetType().Name} cancelled due to condition '{condition}' (was present: {wasConditionPresent})" );
-        return Task.CompletedTask;
-    }
+	/// <summary>
+	/// Called once when schedule starts
+	/// </summary>
+	internal void InternalStart()
+	{
+		if ( _started ) return;
+		_started = true;
 
-    /// <summary>
-    /// Delay for a specified time while checking for cancellation
-    /// </summary>
-    protected async Task DelaySeconds( float seconds )
-    {
-        await GameTask.DelaySeconds( seconds, _cancellationTokenSource?.Token ?? CancellationToken.None );
-    }
+		// Build task sequence
+		OnStart();
+
+		// Start first task
+		StartCurrentTask();
+	}
+
+	/// <summary>
+	/// Called every frame while schedule is running
+	/// </summary>
+	internal TaskStatus OnUpdate()
+	{
+		if ( _tasks.Count == 0 )
+			return TaskStatus.Failed;
+
+		if ( _currentTaskIndex >= _tasks.Count )
+			return TaskStatus.Success; // All tasks completed
+
+		var currentTask = _tasks[_currentTaskIndex];
+		var status = currentTask.InternalUpdate();
+
+		switch ( status )
+		{
+			case TaskStatus.Success:
+				// Move to next task
+				currentTask.InternalEnd();
+				_currentTaskIndex++;
+				StartCurrentTask();
+				return TaskStatus.Running;
+
+			case TaskStatus.Failed:
+			case TaskStatus.Interrupted:
+				currentTask.InternalEnd();
+				return status;
+
+			case TaskStatus.Running:
+				return TaskStatus.Running;
+		}
+
+		return TaskStatus.Running;
+	}
+
+	/// <summary>
+	/// Called once when schedule ends
+	/// </summary>
+	internal void InternalEnd()
+	{
+		// End current task if running
+		if ( _currentTaskIndex < _tasks.Count )
+		{
+			_tasks[_currentTaskIndex].InternalEnd();
+		}
+
+		OnEnd();
+	}
+
+	/// <summary>
+	/// Override to build the sequence of tasks for this schedule
+	/// </summary>
+	protected abstract void OnStart();
+
+	/// <summary>
+	/// Add a task to the sequence
+	/// </summary>
+	protected void AddTask( TaskBase task )
+	{
+		_tasks.Add( task );
+	}
+
+	/// <summary>
+	/// Override for schedule cleanup
+	/// </summary>
+	protected virtual void OnEnd() { }
+
+	/// <summary>
+	/// Start the current task in sequence
+	/// </summary>
+	private void StartCurrentTask()
+	{
+		if ( _currentTaskIndex < _tasks.Count )
+		{
+			var task = _tasks[_currentTaskIndex];
+			task.Initialize( Npc, Behavior );
+			task.InternalStart();
+		}
+	}
 }

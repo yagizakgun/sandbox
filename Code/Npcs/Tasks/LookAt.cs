@@ -1,55 +1,49 @@
-﻿namespace Sandbox.Npcs.Tasks;
+using Sandbox.Npcs.Layers;
 
-public sealed class LookAt : TaskBase
+namespace Sandbox.Npcs.Tasks;
+
+/// <summary>
+/// Tells the LookAtLayer to face a target position or object
+/// </summary>
+public class LookAt : TaskBase
 {
-	public Vector3? Target { get; set; }
-	public GameObject Object { get; set; }
-	public float Speed { get; set; } = 8f;
+	public Vector3? TargetPosition { get; set; }
+	public GameObject TargetObject { get; set; }
 
-	public LookAt( Vector3 target, float speed = 8f )
+	private LookAtLayer _lookAt;
+
+	public LookAt( Vector3 targetPosition )
 	{
-		Target = target;
-		Speed = speed;
+		TargetPosition = targetPosition;
 	}
 
-	public LookAt( GameObject target, float speed = 8f )
+	public LookAt( GameObject gameObject )
 	{
-		Object = target;
-		Speed = speed;
+		TargetObject = gameObject;
 	}
 
-	public override async Task Execute()
+	protected override void OnStart()
 	{
-		while ( !IsLookingAtTarget() && !IsCancelled )
-		{
-			var targetPos = GetTargetPosition();
-			if ( !targetPos.HasValue ) return;
-
-			var direction = (targetPos.Value - Npc.WorldPosition).Normal;
-			var targetRotation = Rotation.LookAt( direction );
-
-			var lerpSpeed = Speed * Time.Delta;
-			Npc.SetBodyTarget( Rotation.Lerp( Npc.WorldRotation, targetRotation, lerpSpeed ) );
-
-			await FrameEnd();
-		}
+		_lookAt ??= GetLayer<LookAtLayer>();
 	}
 
-	private bool IsLookingAtTarget()
+	protected override TaskStatus OnUpdate()
 	{
+		if ( _lookAt is null )
+			return TaskStatus.Failed;
+
 		var targetPos = GetTargetPosition();
-		if ( !targetPos.HasValue ) return true;
+		if ( !targetPos.HasValue )
+			return TaskStatus.Failed;
 
-		var direction = (targetPos.Value - Npc.WorldPosition).Normal;
-		var targetRotation = Rotation.LookAt( direction );
+		_lookAt.LookAt( targetPos.Value );
 
-		return Npc.WorldRotation.Forward.Dot( targetRotation.Forward ) > 0.999f; // crude but it works
+		return _lookAt.IsFacingTarget() ? TaskStatus.Success : TaskStatus.Running;
 	}
 
 	private Vector3? GetTargetPosition()
 	{
-		if ( Object.IsValid() ) return Object.WorldPosition;
-		if ( Target.HasValue ) return Target.Value;
-		return null;
+		if ( TargetObject.IsValid() ) return TargetObject.WorldPosition;
+		return TargetPosition;
 	}
 }

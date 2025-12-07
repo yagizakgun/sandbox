@@ -1,5 +1,6 @@
 ﻿namespace Sandbox.Npcs;
 
+[Title( "NPC" ), Group( "NPCs" ), Icon( "android" )]
 public sealed class Npc : Component
 {
 	[RequireComponent]

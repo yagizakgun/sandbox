@@ -1,13 +1,11 @@
 ﻿namespace Sandbox.Npcs;
 
 /// <summary>
-/// Base class for NPC schedules
+/// A schedule -- can be understood as a way to execute a sequence of tasks
 /// </summary>
 public abstract class ScheduleBase
 {
 	public Behavior Behavior { get; private set; }
-
-	// Accessors
 	protected Npc Npc => Behavior.Npc;
 
 	private List<TaskBase> _tasks = new();
@@ -17,7 +15,7 @@ public abstract class ScheduleBase
 	/// <summary>
 	/// Initialize the schedule with the Behavior context
 	/// </summary>
-	internal void Initialize( Behavior behavior )
+	internal void InternalInit( Behavior behavior )
 	{
 		Behavior = behavior;
 		_tasks.Clear();
@@ -86,13 +84,21 @@ public abstract class ScheduleBase
 			_tasks[_currentTaskIndex].InternalEnd();
 		}
 
+		_currentTaskIndex = 0;
+		_started = false;
+
 		OnEnd();
 	}
 
 	/// <summary>
-	/// Override to build the sequence of tasks for this schedule
+	/// Called when this schedule starts -- this is where you can add tasks to run
 	/// </summary>
-	protected abstract void OnStart();
+	protected virtual void OnStart() { }
+
+	/// <summary>
+	/// Called when this schedule ends -- this is where you can clean stuff up
+	/// </summary>
+	protected virtual void OnEnd() { }
 
 	/// <summary>
 	/// Add a task to the sequence
@@ -103,11 +109,6 @@ public abstract class ScheduleBase
 	}
 
 	/// <summary>
-	/// Override for schedule cleanup
-	/// </summary>
-	protected virtual void OnEnd() { }
-
-	/// <summary>
 	/// Start the current task in sequence
 	/// </summary>
 	private void StartCurrentTask()
@@ -115,8 +116,7 @@ public abstract class ScheduleBase
 		if ( _currentTaskIndex < _tasks.Count )
 		{
 			var task = _tasks[_currentTaskIndex];
-			task.Initialize( Npc, Behavior );
-			task.InternalStart();
+			task.Initialize( this );
 		}
 	}
 }

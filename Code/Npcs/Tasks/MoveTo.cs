@@ -20,7 +20,7 @@ public class MoveTo : TaskBase
 
 	protected override void OnStart()
 	{
-		_locomotion = GetLayer<LocomotionLayer>();
+		_locomotion = Layer<LocomotionLayer>();
 
 		if ( _locomotion is not null )
 		{

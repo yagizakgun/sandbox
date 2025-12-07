@@ -1,19 +1,17 @@
 namespace Sandbox.Npcs.Layers;
 
 /// <summary>
-/// Base class for NPC behavior layers - NO task management, just state
+/// A behavior layer provides specific services for tasks to use -- we don't use behavior layers for state, they are services.
 /// </summary>
 public abstract class BehaviorLayer
 {
-	protected Npc Npc { get; private set; }
-
 	/// <summary>
-	/// Initialize the layer with NPC context
+	/// The behavior this layer belongs to
 	/// </summary>
-	internal void Initialize( Npc npc )
-	{
-		Npc = npc;
-	}
+	internal Behavior Behavior { get; init; }
+
+	/// <inheritdoc cref="Behavior.Npc"/>
+	protected Npc Npc => Behavior.Npc;
 
 	/// <summary>
 	/// Update this layer - called every frame
@@ -24,14 +22,14 @@ public abstract class BehaviorLayer
 	}
 
 	/// <summary>
-	/// Layer-specific update logic - override in derived classes
+	/// Called every update while the behavior is ticking
 	/// </summary>
 	protected virtual void OnUpdate()
 	{
 	}
 
 	/// <summary>
-	/// Reset this layer to default state
+	/// Reset this layer to default
 	/// </summary>
 	public virtual void Reset()
 	{

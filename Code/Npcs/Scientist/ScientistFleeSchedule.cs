@@ -7,18 +7,13 @@ namespace Sandbox.Npcs.Schedules;
 /// </summary>
 public class ScientistFleeSchedule : ScheduleBase
 {
-	private GameObject _threat;
-
-	public ScientistFleeSchedule( GameObject threat )
-	{
-		_threat = threat;
-	}
+	public GameObject Source { get; set; }
 
 	protected override void OnStart()
 	{
-		if ( !_threat.IsValid() ) return;
+		if ( !Source.IsValid() ) return;
 
-		var awayDirection = (Npc.WorldPosition - _threat.WorldPosition).Normal;
+		var awayDirection = (Npc.WorldPosition - Source.WorldPosition).Normal;
 		var fleeTarget = Npc.WorldPosition + awayDirection * 150f;
 
 		AddTask( new MoveTo( fleeTarget ) );

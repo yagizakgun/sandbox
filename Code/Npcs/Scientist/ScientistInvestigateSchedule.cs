@@ -4,19 +4,12 @@ namespace Sandbox.Npcs.Schedules;
 
 public class ScientistInvestigateSchedule : ScheduleBase
 {
-	private GameObject _target;
-
-	public ScientistInvestigateSchedule( GameObject target )
-	{
-		_target = target;
-	}
+	public GameObject Target { get; set; }
 
 	protected override void OnStart()
 	{
-		if ( !_target.IsValid() ) return;
-
 		// Turn to face the target
-		AddTask( new LookAt( _target ) );
+		AddTask( new LookAt( Target ) );
 
 		// Wait a bit
 		AddTask( new Wait( 1.5f ) );

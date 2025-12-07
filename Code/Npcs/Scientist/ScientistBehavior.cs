@@ -9,44 +9,66 @@ public class ScientistBehavior : Behavior
 	[Property] public float PersonalSpace { get; set; } = 128f;
 	[Property] public TagSet TargetTags { get; set; } = ["player"];
 
-	protected SensesLayer _senses;
+	private Vector3? _lastTarget;
+	private TimeSince _timeSinceLostVision;
 
 	protected override void OnEnabled()
 	{
 		var senses = AddLayer<SensesLayer>();
-
-		// configure senses
 		senses.SightRange = SightRange;
 		senses.PersonalSpace = PersonalSpace;
 		senses.TargetTags = TargetTags;
 
 		AddLayer<LocomotionLayer>();
 		AddLayer<LookAtLayer>();
-
-		_senses = senses;
 	}
 
 	public override ScheduleBase QuerySchedule()
 	{
-		if ( _senses.DistanceToNearest <= _senses.PersonalSpace && _senses.Nearest.IsValid() )
-		{
-			return new ScientistFleeSchedule( _senses.Nearest );
-		}
+		var senses = Layer<SensesLayer>();
 
-		if ( _senses.VisibleTargets.Count > 0 )
+		//
+		// Update last known position if we can see a target
+		//
+		if ( senses.VisibleTargets.Any() )
 		{
-			var visiblePlayer = _senses.GetNearestVisible();
-			if ( visiblePlayer.IsValid() )
+			var visible = senses.GetNearestVisible();
+			if ( visible.IsValid() )
 			{
-				return new ScientistInvestigateSchedule( visiblePlayer );
+				_lastTarget = visible.WorldPosition;
+				_timeSinceLostVision = 0;
 			}
 		}
 
-		if ( _senses.Nearest.IsValid() && _senses.DistanceToNearest <= _senses.SightRange )
+		//
+		// Is someone in our face?
+		//
+		if ( senses.DistanceToNearest <= senses.PersonalSpace && senses.Nearest.IsValid() )
 		{
-			return new ScientistSearchSchedule( _senses.Nearest.WorldPosition );
+			var flee = Schedule<ScientistFleeSchedule>();
+			flee.Source = senses.Nearest;
+			return flee;
 		}
 
-		return new ScientistIdleSchedule();
+		if ( senses.VisibleTargets.Any() )
+		{
+			var visible = senses.GetNearestVisible();
+			if ( visible.IsValid() )
+			{
+				var investigate = Schedule<ScientistInvestigateSchedule>();
+				investigate.Target = visible;
+				return investigate;
+			}
+		}
+
+		if ( _lastTarget.HasValue && _timeSinceLostVision < 10f )
+		{
+			var search = Schedule<ScientistSearchSchedule>();
+			search.Target = _lastTarget.Value;
+			return search;
+		}
+
+		_lastTarget = null;
+		return Schedule<ScientistIdleSchedule>();
 	}
 }

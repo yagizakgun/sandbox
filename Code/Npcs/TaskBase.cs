@@ -3,44 +3,60 @@
 namespace Sandbox.Npcs;
 
 /// <summary>
-/// Base class for all tasks
+/// A task
 /// </summary>
 public abstract class TaskBase
 {
-	protected Npc Npc { get; private set; }
-	protected Behavior Behavior { get; private set; }
+	protected ScheduleBase Schedule { get; private set; }
+	protected Behavior Behavior => Schedule.Behavior;
+	protected Npc Npc => Schedule.Behavior.Npc;
 
-	private bool _started;
+	private TaskStatus _currentStatus;
 
-	internal void Initialize( Npc npc, Behavior behavior )
+	/// <summary>
+	/// What is the current status of this task?
+	/// </summary>
+	protected TaskStatus Status
 	{
-		Npc = npc;
-		Behavior = behavior;
+		get => _currentStatus;
 	}
 
-	protected T GetLayer<T>() where T : BehaviorLayer
+	/// <inheritdoc cref="Behavior.Layer"/>
+	protected T Layer<T>() where T : BehaviorLayer, new() => Behavior?.Layer<T>();
+
+	internal void Initialize( ScheduleBase schedule )
 	{
-		return Behavior?.GetLayer<T>();
+		Schedule = schedule;
+		InternalStart();
 	}
 
-	internal void InternalStart()
+	private void InternalStart()
 	{
-		if ( _started ) return;
-		_started = true;
+		_currentStatus = TaskStatus.Running;
 		OnStart();
 	}
 
 	internal TaskStatus InternalUpdate()
 	{
-		return OnUpdate();
+		var status = OnUpdate();
+		_currentStatus = status;
+
+		return status;
 	}
 
 	internal void InternalEnd()
 	{
+		if ( _currentStatus == TaskStatus.Running )
+		{
+			_currentStatus = TaskStatus.Success;
+		}
+
 		OnEnd();
+		Reset();
 	}
 
 	protected virtual void OnStart() { }
 	protected abstract TaskStatus OnUpdate();
 	protected virtual void OnEnd() { }
+	protected virtual void Reset() { }
 }

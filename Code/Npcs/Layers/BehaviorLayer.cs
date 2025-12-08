@@ -8,7 +8,7 @@ public abstract class BehaviorLayer
 	/// <summary>
 	/// The behavior this layer belongs to
 	/// </summary>
-	internal Behavior Behavior { get; init; }
+	internal Behavior Behavior { get; set; }
 
 	/// <inheritdoc cref="Behavior.Npc"/>
 	protected Npc Npc => Behavior.Npc;

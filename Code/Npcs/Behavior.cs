@@ -22,9 +22,6 @@ public abstract class Behavior : Component
 	public ScheduleBase CurrentSchedule => _currentSchedule;
 
 	[Property, JsonIgnore, ReadOnly, Group( "Debug" )]
-	protected Dictionary<Type, BehaviorLayer> _layers = new();
-
-	[Property, JsonIgnore, ReadOnly, Group( "Debug" )]
 	protected Dictionary<Type, ScheduleBase> _schedules = new();
 
 	private bool _scheduleStarted;
@@ -34,16 +31,9 @@ public abstract class Behavior : Component
 	/// </summary>
 	public T Layer<T>() where T : BehaviorLayer, new()
 	{
-		var type = typeof( T );
-		if ( !_layers.TryGetValue( type, out var layer ) )
-		{
-			layer = new T();
-			_layers[type] = layer;
-		}
-
+		var layer = GetOrAddComponent<T>();
 		layer.Behavior = this;
-
-		return (T)layer;
+		return layer;
 	}
 
 	/// <inheritdoc cref="Layer"/>
@@ -76,11 +66,6 @@ public abstract class Behavior : Component
 	internal bool Update( Npc npc )
 	{
 		UpdateSchedule();
-
-		foreach ( var layer in _layers.Values )
-		{
-			layer.Update();
-		}
 
 		return _currentSchedule is not null;
 	}
@@ -142,7 +127,7 @@ public abstract class Behavior : Component
 		EndCurrentSchedule();
 
 		// Reset all layers to default state
-		foreach ( var layer in _layers.Values )
+		foreach ( var layer in GetComponentsInChildren<BehaviorLayer>() )
 		{
 			layer.Reset();
 		}

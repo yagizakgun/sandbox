@@ -5,7 +5,8 @@ namespace Sandbox.Npcs.Layers;
 /// </summary>
 public class NavigationLayer : BehaviorLayer
 {
-	public NavMeshAgent Agent => Npc?.Agent;
+	[RequireComponent]
+	public NavMeshAgent Agent { get; private set; }
 
 	public Vector3? MoveTarget { get; private set; }
 

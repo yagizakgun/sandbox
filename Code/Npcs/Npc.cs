@@ -3,19 +3,8 @@
 [Title( "NPC" ), Group( "NPCs" ), Icon( "android" )]
 public sealed class Npc : Component
 {
-	[RequireComponent]
-	public NavMeshAgent Agent { get; private set; }
-
 	public Vector3? HeadTarget { get; private set; }
 	public Vector3? EyeTarget { get; private set; }
-
-	protected override void OnDisabled()
-	{
-		foreach ( var behavior in GetComponents<Behavior>() )
-		{
-			behavior.Cancel();
-		}
-	}
 
 	protected override void OnUpdate()
 	{

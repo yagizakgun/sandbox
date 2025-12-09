@@ -110,18 +110,9 @@ public abstract class Behavior : Component
 		}
 	}
 
-	/// <summary>
-	/// Cancel this behavior
-	/// </summary>
-	internal void Cancel()
+	protected override void OnDisabled()
 	{
 		EndCurrentSchedule();
-
-		// Reset all layers to default state
-		foreach ( var layer in GetComponentsInChildren<BehaviorLayer>() )
-		{
-			layer.Reset();
-		}
 	}
 
 	/// <summary>

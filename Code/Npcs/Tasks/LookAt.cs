@@ -24,7 +24,7 @@ public class LookAt : TaskBase
 
 	protected override void OnStart()
 	{
-		_lookAt ??= Layer<LookAtLayer>();
+		_lookAt ??= GetLayer<LookAtLayer>();
 	}
 
 	protected override TaskStatus OnUpdate()

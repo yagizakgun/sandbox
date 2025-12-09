@@ -21,8 +21,8 @@ public abstract class TaskBase
 		get => _currentStatus;
 	}
 
-	/// <inheritdoc cref="Behavior.Layer"/>
-	protected T Layer<T>() where T : BehaviorLayer, new() => Behavior?.Layer<T>();
+	/// <inheritdoc cref="Behavior.GetLayer"/>
+	protected T GetLayer<T>() where T : BehaviorLayer, new() => Behavior?.GetLayer<T>();
 
 	internal void Initialize( ScheduleBase schedule )
 	{

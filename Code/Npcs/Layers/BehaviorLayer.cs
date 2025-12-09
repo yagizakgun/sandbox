@@ -5,11 +5,5 @@ namespace Sandbox.Npcs.Layers;
 /// </summary>
 public abstract class BehaviorLayer : Component
 {
-	/// <summary>
-	/// The behavior this layer belongs to
-	/// </summary>
-	internal Behavior Behavior { get; set; }
-
-	/// <inheritdoc cref="Behavior.Npc"/>
-	protected Npc Npc => Behavior.Npc;
+	protected Npc Npc => GetComponentInParent<Npc>();
 }

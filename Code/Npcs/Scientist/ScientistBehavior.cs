@@ -5,34 +5,26 @@ namespace Sandbox.Npcs.Behaviors;
 
 public class ScientistBehavior : Behavior
 {
-	[Property] public float SightRange { get; set; } = 512f;
-	[Property] public float PersonalSpace { get; set; } = 128f;
-	[Property] public TagSet TargetTags { get; set; } = ["player"];
-
 	private Vector3? _lastTarget;
 	private TimeSince _timeSinceLostVision;
 
-	protected override void OnEnabled()
-	{
-		var senses = AddLayer<SensesLayer>();
-		senses.SightRange = SightRange;
-		senses.PersonalSpace = PersonalSpace;
-		senses.TargetTags = TargetTags;
+	[RequireComponent]
+	public SensesLayer Senses { get; private set; }
 
-		AddLayer<LocomotionLayer>();
-		AddLayer<LookAtLayer>();
-	}
+	[RequireComponent]
+	public LocomotionLayer Locomotion { get; private set; }
+
+	[RequireComponent]
+	public LookAtLayer LookAt { get; private set; }
 
 	public override ScheduleBase Run()
 	{
-		var senses = Layer<SensesLayer>();
-
 		//
 		// Update last known position if we can see a target
 		//
-		if ( senses.VisibleTargets.Any() )
+		if ( Senses.VisibleTargets.Any() )
 		{
-			var visible = senses.GetNearestVisible();
+			var visible = Senses.GetNearestVisible();
 			if ( visible.IsValid() )
 			{
 				_lastTarget = visible.WorldPosition;
@@ -43,19 +35,19 @@ public class ScientistBehavior : Behavior
 		//
 		// Is someone in our face?
 		//
-		if ( senses.DistanceToNearest <= senses.PersonalSpace && senses.Nearest.IsValid() )
+		if ( Senses.DistanceToNearest <= Senses.PersonalSpace && Senses.Nearest.IsValid() )
 		{
-			var flee = Schedule<ScientistFleeSchedule>();
-			flee.Source = senses.Nearest;
+			var flee = GetSchedule<ScientistFleeSchedule>();
+			flee.Source = Senses.Nearest;
 			return flee;
 		}
 
-		if ( senses.VisibleTargets.Any() )
+		if ( Senses.VisibleTargets.Any() )
 		{
-			var visible = senses.GetNearestVisible();
+			var visible = Senses.GetNearestVisible();
 			if ( visible.IsValid() )
 			{
-				var investigate = Schedule<ScientistInvestigateSchedule>();
+				var investigate = GetSchedule<ScientistInvestigateSchedule>();
 				investigate.Target = visible;
 				return investigate;
 			}
@@ -63,12 +55,12 @@ public class ScientistBehavior : Behavior
 
 		if ( _lastTarget.HasValue && _timeSinceLostVision < 10f )
 		{
-			var search = Schedule<ScientistSearchSchedule>();
+			var search = GetSchedule<ScientistSearchSchedule>();
 			search.Target = _lastTarget.Value;
 			return search;
 		}
 
 		_lastTarget = null;
-		return Schedule<ScientistIdleSchedule>();
+		return GetSchedule<ScientistIdleSchedule>();
 	}
 }

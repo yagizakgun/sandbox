@@ -29,20 +29,15 @@ public abstract class Behavior : Component
 	/// <summary>
 	/// Get a layer -- if it doesn't exist, one will be created
 	/// </summary>
-	public T Layer<T>() where T : BehaviorLayer, new()
+	public T GetLayer<T>() where T : BehaviorLayer, new()
 	{
-		var layer = GetOrAddComponent<T>();
-		layer.Behavior = this;
-		return layer;
+		return GetOrAddComponent<T>();
 	}
-
-	/// <inheritdoc cref="Layer"/>
-	protected T AddLayer<T>() where T : BehaviorLayer, new() => Layer<T>();
 
 	/// <summary>
 	/// Get a schedule -- if it doesn't exist, one will be created
 	/// </summary>
-	protected T Schedule<T>() where T : ScheduleBase, new()
+	protected T GetSchedule<T>() where T : ScheduleBase, new()
 	{
 		var type = typeof( T );
 		if ( !_schedules.TryGetValue( type, out var schedule ) )
@@ -65,25 +60,21 @@ public abstract class Behavior : Component
 	/// <returns></returns>
 	internal bool Update( Npc npc )
 	{
-		UpdateSchedule();
-
-		return _currentSchedule is not null;
-	}
-
-	/// <summary>
-	/// Update the current schedule
-	/// </summary>
-	private void UpdateSchedule()
-	{
 		var newSchedule = Run();
 
 		if ( ShouldStartSchedule( newSchedule ) )
 		{
-			StartSchedule( newSchedule );
-			return;
+			EndCurrentSchedule();
+
+			_currentSchedule = newSchedule;
+			_currentSchedule.InternalInit( this );
+			_scheduleStarted = false;
+
+			return true;
 		}
 
 		UpdateCurrentSchedule();
+		return _currentSchedule is not null;
 	}
 
 	private bool ShouldStartSchedule( ScheduleBase newSchedule )
@@ -131,18 +122,6 @@ public abstract class Behavior : Component
 		{
 			layer.Reset();
 		}
-	}
-
-	/// <summary>
-	/// Start a new schedule
-	/// </summary>
-	private void StartSchedule( ScheduleBase newSchedule )
-	{
-		EndCurrentSchedule();
-
-		_currentSchedule = newSchedule;
-		_currentSchedule.InternalInit( this );
-		_scheduleStarted = false;
 	}
 
 	/// <summary>

@@ -14,8 +14,6 @@ public abstract class Behavior : Component
 	/// </summary>
 	[Property, Range( 0, 16 )] public int Priority { get; set; } = 0;
 
-	public Npc Npc => GetComponentInParent<Npc>();
-
 	/// <summary>
 	/// The current schedule
 	/// </summary>

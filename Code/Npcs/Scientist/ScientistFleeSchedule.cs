@@ -13,8 +13,8 @@ public class ScientistFleeSchedule : ScheduleBase
 	{
 		if ( !Source.IsValid() ) return;
 
-		var awayDirection = (Npc.WorldPosition - Source.WorldPosition).Normal;
-		var fleeTarget = Npc.WorldPosition + awayDirection * 150f;
+		var awayDirection = (GameObject.WorldPosition - Source.WorldPosition).Normal;
+		var fleeTarget = GameObject.WorldPosition + awayDirection * 150f;
 
 		AddTask( new MoveTo( fleeTarget ) );
 	}

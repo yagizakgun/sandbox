@@ -9,7 +9,6 @@ public abstract class TaskBase
 {
 	protected ScheduleBase Schedule { get; private set; }
 	protected Behavior Behavior => Schedule.Behavior;
-	protected Npc Npc => Behavior.Npc;
 
 	/// <summary>
 	/// What is the current status of this task?

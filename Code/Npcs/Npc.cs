@@ -3,9 +3,6 @@
 [Title( "NPC" ), Group( "NPCs" ), Icon( "android" )]
 public sealed class Npc : Component
 {
-	public Vector3? HeadTarget { get; private set; }
-	public Vector3? EyeTarget { get; private set; }
-
 	protected override void OnUpdate()
 	{
 		if ( IsProxy )

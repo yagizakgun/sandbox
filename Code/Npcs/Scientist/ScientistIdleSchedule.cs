@@ -8,7 +8,7 @@ public class ScientistIdleSchedule : ScheduleBase
 	{
 		// look around randomly
 		var randomDir = Vector3.Random.Normal;
-		var lookTarget = Npc.WorldPosition + randomDir * 100f;
+		var lookTarget = GameObject.WorldPosition + randomDir * 100f;
 		AddTask( new LookAt( lookTarget ) );
 
 		// wait a bit, with random deviation

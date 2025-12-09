@@ -30,7 +30,7 @@ public class NavigationLayer : BehaviorLayer
 	protected override void OnUpdate()
 	{
 		// TODO: is this suitable?
-		var animation = GetLayer<AnimationLayer>();
+		var animation = GetComponentInChildren<AnimationLayer>();
 		if ( animation.IsValid() )
 		{
 			animation.SetMove( Agent.Velocity, Agent.WorldRotation );
@@ -42,9 +42,9 @@ public class NavigationLayer : BehaviorLayer
 	/// </summary>
 	public bool HasReachedTarget()
 	{
-		if ( !MoveTarget.HasValue || !Npc.IsValid() ) return true;
+		if ( !MoveTarget.HasValue ) return true;
 
-		var distance = Npc.WorldPosition.Distance( MoveTarget.Value );
+		var distance = WorldPosition.Distance( MoveTarget.Value );
 		return distance <= StopDistance;
 	}
 

@@ -33,8 +33,6 @@ public class SensesLayer : BehaviorLayer
 	/// </summary>
 	private void ScanEnvironment()
 	{
-		if ( !Npc.IsValid() ) return;
-
 		// Clear previous scan results
 		VisibleTargets.Clear();
 		AudibleTargets.Clear();
@@ -42,13 +40,13 @@ public class SensesLayer : BehaviorLayer
 		DistanceToNearest = float.MaxValue;
 
 		// Find all potential targets in hearing range
-		var nearbyObjects = Npc.Scene.FindInPhysics( new Sphere( Npc.WorldPosition, HearingRange ) );
+		var nearbyObjects = Scene.FindInPhysics( new Sphere( WorldPosition, HearingRange ) );
 		
 		foreach ( var obj in nearbyObjects )
 		{
 			if ( !obj.Tags.HasAny( TargetTags ) ) continue;
 
-			var distance = Npc.WorldPosition.Distance( obj.WorldPosition );
+			var distance = WorldPosition.Distance( obj.WorldPosition );
 			
 			// Track nearest
 			if ( distance < DistanceToNearest )
@@ -76,11 +74,11 @@ public class SensesLayer : BehaviorLayer
 	/// </summary>
 	private bool HasLineOfSight( GameObject target )
 	{
-		var eyePosition = Npc.WorldPosition + Vector3.Up * 64f; // Eye height
+		var eyePosition = WorldPosition + Vector3.Up * 64f; // Eye height
 		var targetPosition = target.WorldPosition + Vector3.Up * 32f; // Target center
 
-		var trace = Npc.Scene.Trace.Ray( eyePosition, targetPosition )
-			.IgnoreGameObjectHierarchy( Npc.GameObject )
+		var trace = Scene.Trace.Ray( eyePosition, targetPosition )
+			.IgnoreGameObjectHierarchy( GameObject )
 			.WithoutTags( "trigger" )
 			.Run();
 
@@ -97,7 +95,7 @@ public class SensesLayer : BehaviorLayer
 
 		foreach ( var target in VisibleTargets )
 		{
-			var distance = Npc.WorldPosition.Distance( target.WorldPosition );
+			var distance = WorldPosition.Distance( target.WorldPosition );
 			if ( distance < nearestDistance )
 			{
 				nearestDistance = distance;

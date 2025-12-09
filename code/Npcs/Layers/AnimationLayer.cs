@@ -1,7 +1,7 @@
 ﻿namespace Sandbox.Npcs.Layers;
 
 /// <summary>
-/// Provides animation parameters and helpers for NPC behaviors.
+/// Provides animation parameters and helpers for behaviors.
 /// Use via Behavior.GetLayer<AnimationLayer>().
 /// Also handles look-at (eyes/head) and body turning via animator parameters.
 /// </summary>
@@ -19,13 +19,12 @@ public sealed class AnimationLayer : BehaviorLayer
 	public float MaxHeadAngle { get; set; } = 45f;
 
 	/// <summary>
-	/// Current world-space target the NPC is looking at (if any).
+	/// Current world-space target the Npc is looking at (if any).
 	/// </summary>
 	public Vector3? LookTarget { get; private set; }
 
 	private SkinnedModelRenderer _renderer;
 
-	// Track yaw for move_rotationspeed (use NaN to detect first sample)
 	private float _lastYaw = float.NaN;
 
 	protected override void OnStart()
@@ -37,7 +36,7 @@ public sealed class AnimationLayer : BehaviorLayer
 
 	protected override void OnUpdate()
 	{
-		if ( LookTarget.HasValue && Npc.IsValid() )
+		if ( LookTarget.HasValue )
 		{
 			UpdateLookDirection( LookTarget.Value );
 		}
@@ -104,7 +103,7 @@ public sealed class AnimationLayer : BehaviorLayer
 	}
 
 	/// <summary>
-	/// Command this layer to look at a target (called by tasks).
+	/// Command this layer to look at a target
 	/// </summary>
 	public void LookAt( Vector3 target )
 	{
@@ -112,7 +111,7 @@ public sealed class AnimationLayer : BehaviorLayer
 	}
 
 	/// <summary>
-	/// Stop looking (called by tasks).
+	/// Stop looking
 	/// </summary>
 	public void StopLooking()
 	{
@@ -130,10 +129,10 @@ public sealed class AnimationLayer : BehaviorLayer
 	/// </summary>
 	public bool IsFacingTarget()
 	{
-		if ( !LookTarget.HasValue || !Npc.IsValid() ) return true;
+		if ( !LookTarget.HasValue ) return true;
 
-		var direction = (LookTarget.Value - Npc.WorldPosition).Normal;
-		var dot = Npc.WorldRotation.Forward.Dot( direction );
+		var direction = (LookTarget.Value - WorldPosition).Normal;
+		var dot = WorldRotation.Forward.Dot( direction );
 		return dot > 0.90f;
 	}
 
@@ -142,14 +141,14 @@ public sealed class AnimationLayer : BehaviorLayer
 	/// </summary>
 	private void UpdateLookDirection( Vector3 targetPosition )
 	{
-		if ( _renderer is null || !Npc.IsValid() ) return;
+		if ( _renderer is null ) return;
 
-		var worldDirection = (targetPosition - Npc.WorldPosition).Normal;
-		var currentForward = Npc.WorldRotation.Forward;
+		var worldDirection = (targetPosition - WorldPosition).Normal;
+		var currentForward = WorldRotation.Forward;
 
 		var angleToTarget = MathF.Acos( Vector3.Dot( currentForward, worldDirection ) ) * (180f / MathF.PI);
 
-		var localDirection = Npc.WorldRotation.Inverse * worldDirection;
+		var localDirection = WorldRotation.Inverse * worldDirection;
 
 		_renderer.Set( "aim_head", localDirection );
 		_renderer.Set( "aim_eyes", localDirection );
@@ -158,7 +157,7 @@ public sealed class AnimationLayer : BehaviorLayer
 		{
 			var targetRotation = Rotation.LookAt( worldDirection );
 			var t = LookSpeed * Time.Delta;
-			Npc.WorldRotation = Rotation.Lerp( Npc.WorldRotation, targetRotation, t );
+			WorldRotation = Rotation.Lerp( WorldRotation, targetRotation, t );
 		}
 	}
 
@@ -168,6 +167,7 @@ public sealed class AnimationLayer : BehaviorLayer
 
 		IsGrounded = false;
 		Speed = 1.0f;
+		LookTarget = null;
 		_lastYaw = float.NaN;
 
 		_renderer.Set( "b_attack", false );
@@ -182,7 +182,5 @@ public sealed class AnimationLayer : BehaviorLayer
 
 		_renderer.Set( "aim_eyes", Vector3.Zero );
 		_renderer.Set( "aim_head", Vector3.Zero );
-
-		LookTarget = null;
 	}
 }

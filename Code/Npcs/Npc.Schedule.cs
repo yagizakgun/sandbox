@@ -33,6 +33,8 @@ public partial class Npc : Component
 	/// </summary>
 	bool TickSchedule()
 	{
+
+
 		var newSchedule = GetSchedule();
 
 		if ( ShouldStartSchedule( newSchedule ) )
@@ -44,14 +46,23 @@ public partial class Npc : Component
 			ActiveSchedule?.InternalStart();
 		}
 
-		ActiveSchedule?.OnUpdate();
+		if ( ActiveSchedule is not null )
+		{
+			RunActiveSchedule();
+		}
 
-		if ( ActiveSchedule is not null && ActiveSchedule.InternalUpdate() is not TaskStatus.Running )
+
+
+
+		return ActiveSchedule is not null;
+	}
+
+	private void RunActiveSchedule()
+	{
+		if ( ActiveSchedule.InternalUpdate() is not TaskStatus.Running )
 		{
 			EndCurrentSchedule();
 		}
-
-		return ActiveSchedule is not null;
 	}
 
 	private bool ShouldStartSchedule( ScheduleBase newSchedule )

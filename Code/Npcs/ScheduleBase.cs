@@ -40,9 +40,22 @@ public abstract class ScheduleBase
 		StartCurrentTask();
 	}
 
-	internal virtual void OnUpdate()
+	protected virtual void OnUpdate()
 	{
 		//
+	}
+
+	protected virtual bool ShouldCancel()
+	{
+		return false;
+	}
+
+	/// <summary>
+	/// Called when task is ended because of ShouldCancel returning true
+	/// </summary>
+	protected virtual void OnCancelled()
+	{
+
 	}
 
 	/// <summary>
@@ -52,6 +65,13 @@ public abstract class ScheduleBase
 	{
 		if ( _tasks.Count == 0 ) return TaskStatus.Failed;
 		if ( _currentTaskIndex >= _tasks.Count ) return TaskStatus.Success;
+
+		// Give schedule a chance to cancel itself, based on interuptions
+		if ( ShouldCancel() )
+		{
+			OnCancelled();
+			return TaskStatus.Interrupted;
+		}
 
 		var currentTask = _tasks[_currentTaskIndex];
 		var status = currentTask.InternalUpdate();

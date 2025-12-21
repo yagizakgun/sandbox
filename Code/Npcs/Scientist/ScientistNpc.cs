@@ -1,21 +1,20 @@
-using Sandbox.Npcs.Layers;
-using Sandbox.Npcs.Schedules;
+﻿using Sandbox.Npcs.Schedules;
 
-namespace Sandbox.Npcs.Behaviors;
+namespace Sandbox.Npcs.Scientist;
 
-public class ScientistBehavior : Behavior
+public class ScientistNpc : Npc
 {
 	private Vector3? _lastTarget;
 	private TimeSince _timeSinceLostVision;
 
-	public override ScheduleBase Run()
+	public override ScheduleBase GetSchedule()
 	{
 		//
 		// Update last known position if we can see a target
 		//
-		if ( Npc.Senses.VisibleTargets.Any() )
+		if ( Senses.VisibleTargets.Any() )
 		{
-			var visible = Npc.Senses.GetNearestVisible();
+			var visible = Senses.GetNearestVisible();
 			if ( visible.IsValid() )
 			{
 				_lastTarget = visible.WorldPosition;
@@ -26,16 +25,16 @@ public class ScientistBehavior : Behavior
 		//
 		// Is someone in our face?
 		//
-		if ( Npc.Senses.DistanceToNearest <= Npc.Senses.PersonalSpace && Npc.Senses.Nearest.IsValid() )
+		if ( Senses.DistanceToNearest <= Senses.PersonalSpace && Senses.Nearest.IsValid() )
 		{
 			var flee = GetSchedule<ScientistFleeSchedule>();
-			flee.Source = Npc.Senses.Nearest;
+			flee.Source = Senses.Nearest;
 			return flee;
 		}
 
-		if ( Npc.Senses.VisibleTargets.Any() )
+		if ( Senses.VisibleTargets.Any() )
 		{
-			var visible = Npc.Senses.GetNearestVisible();
+			var visible = Senses.GetNearestVisible();
 			if ( visible.IsValid() )
 			{
 				var investigate = GetSchedule<ScientistInvestigateSchedule>();

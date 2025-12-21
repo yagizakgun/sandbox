@@ -5,9 +5,8 @@
 /// </summary>
 public abstract class ScheduleBase
 {
-	public Behavior Behavior { get; private set; }
-	public Npc Npc => Behavior.Npc;
-	protected GameObject GameObject => Behavior.GameObject;
+	public Npc Npc { get; private set; }
+	protected GameObject GameObject => Npc.GameObject;
 
 	private List<TaskBase> _tasks = new();
 	private int _currentTaskIndex = 0;
@@ -18,9 +17,9 @@ public abstract class ScheduleBase
 	/// <summary>
 	/// Initialize the schedule with the Behavior context
 	/// </summary>
-	internal void InternalInit( Behavior behavior )
+	internal void InternalInit( Npc npc )
 	{
-		Behavior = behavior;
+		Npc = npc;
 		_tasks.Clear();
 		_currentTaskIndex = 0;
 		_started = false;

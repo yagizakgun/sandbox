@@ -1,6 +1,4 @@
-﻿using Sandbox.Npcs.Layers;
-
-namespace Sandbox.Npcs;
+﻿namespace Sandbox.Npcs;
 
 /// <summary>
 /// A task
@@ -8,7 +6,6 @@ namespace Sandbox.Npcs;
 public abstract class TaskBase
 {
 	protected ScheduleBase Schedule { get; private set; }
-	protected Behavior Behavior => Schedule.Behavior;
 	protected Npc Npc => Schedule.Npc;
 
 	/// <summary>

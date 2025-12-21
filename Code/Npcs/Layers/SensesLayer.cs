@@ -19,7 +19,7 @@ public class SensesLayer : BaseNpcLayer
 
 	private TimeSince _lastScan;
 
-	public override void Update()
+	protected override void OnUpdate()
 	{
 		if ( _lastScan > ScanInterval )
 		{

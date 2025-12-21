@@ -10,8 +10,6 @@ public class NavigationLayer : BaseNpcLayer
 	public Vector3? MoveTarget { get; private set; }
 	public float StopDistance { get; private set; } = 10f;
 
-	public NavigationLayer() { }
-
 	protected override void OnStart()
 	{
 		Agent = Npc.GetComponent<NavMeshAgent>();
@@ -31,7 +29,7 @@ public class NavigationLayer : BaseNpcLayer
 		}
 	}
 
-	public override void Update()
+	protected override void OnUpdate()
 	{
 		if ( Agent.IsValid() )
 		{

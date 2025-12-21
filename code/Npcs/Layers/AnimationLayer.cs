@@ -26,7 +26,7 @@ public sealed class AnimationLayer : BaseNpcLayer
 		_lastYaw = float.NaN;
 	}
 
-	public override void Update()
+	protected override void OnUpdate()
 	{
 		if ( LookTarget.HasValue )
 		{
@@ -135,19 +135,19 @@ public sealed class AnimationLayer : BaseNpcLayer
 	{
 		if ( _renderer is null ) return;
 
-		var worldDirection = (targetPosition - Npc.WorldPosition).Normal;
+		var worldDirection = ((targetPosition - Npc.WorldPosition) with { z = 0 }).Normal;
 		var currentForward = Npc.WorldRotation.Forward;
 
-		var angleToTarget = MathF.Acos( Vector3.Dot( currentForward, worldDirection ) ) * (180f / MathF.PI);
+		var angleToTarget = Vector3.GetAngle( currentForward, worldDirection );
 
 		var localDirection = Npc.WorldRotation.Inverse * worldDirection;
 
 		_renderer.Set( "aim_head", localDirection );
 		_renderer.Set( "aim_eyes", localDirection );
 
-		if ( angleToTarget > MaxHeadAngle )
+		if ( angleToTarget > MaxHeadAngle || Speed > 1 )
 		{
-			var targetRotation = Rotation.LookAt( worldDirection );
+			var targetRotation = Rotation.LookAt( worldDirection, Vector3.Up );
 			var t = LookSpeed * Time.Delta;
 			Npc.GameObject.WorldRotation = Rotation.Lerp( Npc.WorldRotation, targetRotation, t );
 		}

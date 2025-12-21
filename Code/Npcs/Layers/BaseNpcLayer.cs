@@ -26,10 +26,16 @@ public abstract class BaseNpcLayer
 	/// </summary>
 	protected virtual void OnStart() { }
 
+
+	internal void InternalUpdate()
+	{
+		OnUpdate();
+	}
+
 	/// <summary>
 	/// Called each frame to update the layer
 	/// </summary>
-	public virtual void Update() { }
+	protected virtual void OnUpdate() { }
 
 	/// <summary>
 	/// Reset the layer state

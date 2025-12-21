@@ -2,20 +2,14 @@
 
 /// <summary>
 /// Provides animation parameters and helpers for behaviors.
-/// Use via Behavior.GetLayer<AnimationLayer>().
 /// Also handles look-at (eyes/head) and body turning via animator parameters.
 /// </summary>
-[Group( "NPCs" ), Icon( "animation" )]
-public sealed class AnimationLayer : BehaviorLayer
+public sealed class AnimationLayer : BaseNpcLayer
 {
 	// Movement animation
 	public float Speed { get; set; } = 1.0f;
 	public bool IsGrounded { get; set; } = true;
-
-	[Property]
 	public float LookSpeed { get; set; } = 8f;
-
-	[Property]
 	public float MaxHeadAngle { get; set; } = 45f;
 
 	/// <summary>
@@ -24,17 +18,15 @@ public sealed class AnimationLayer : BehaviorLayer
 	public Vector3? LookTarget { get; private set; }
 
 	private SkinnedModelRenderer _renderer;
-
 	private float _lastYaw = float.NaN;
 
 	protected override void OnStart()
 	{
-		base.OnStart();
-		_renderer = GetComponentInChildren<SkinnedModelRenderer>();
+		_renderer = Npc.GetComponentInChildren<SkinnedModelRenderer>();
 		_lastYaw = float.NaN;
 	}
 
-	protected override void OnUpdate()
+	public override void Update()
 	{
 		if ( LookTarget.HasValue )
 		{
@@ -131,8 +123,8 @@ public sealed class AnimationLayer : BehaviorLayer
 	{
 		if ( !LookTarget.HasValue ) return true;
 
-		var direction = (LookTarget.Value - WorldPosition).Normal;
-		var dot = WorldRotation.Forward.Dot( direction );
+		var direction = (LookTarget.Value - Npc.WorldPosition).Normal;
+		var dot = Npc.WorldRotation.Forward.Dot( direction );
 		return dot > 0.90f;
 	}
 
@@ -143,12 +135,12 @@ public sealed class AnimationLayer : BehaviorLayer
 	{
 		if ( _renderer is null ) return;
 
-		var worldDirection = (targetPosition - WorldPosition).Normal;
-		var currentForward = WorldRotation.Forward;
+		var worldDirection = (targetPosition - Npc.WorldPosition).Normal;
+		var currentForward = Npc.WorldRotation.Forward;
 
 		var angleToTarget = MathF.Acos( Vector3.Dot( currentForward, worldDirection ) ) * (180f / MathF.PI);
 
-		var localDirection = WorldRotation.Inverse * worldDirection;
+		var localDirection = Npc.WorldRotation.Inverse * worldDirection;
 
 		_renderer.Set( "aim_head", localDirection );
 		_renderer.Set( "aim_eyes", localDirection );
@@ -157,7 +149,7 @@ public sealed class AnimationLayer : BehaviorLayer
 		{
 			var targetRotation = Rotation.LookAt( worldDirection );
 			var t = LookSpeed * Time.Delta;
-			WorldRotation = Rotation.Lerp( WorldRotation, targetRotation, t );
+			Npc.GameObject.WorldRotation = Rotation.Lerp( Npc.WorldRotation, targetRotation, t );
 		}
 	}
 

@@ -10,6 +10,11 @@ namespace Sandbox.Npcs;
 public abstract class Behavior : Component
 {
 	/// <summary>
+	/// The NPC this behavior belongs to
+	/// </summary>
+	public Npc Npc { get; private set; }
+
+	/// <summary>
 	/// How important is this behavior -- lower priority behaviors will be cancelled if a higher priority one wants to run
 	/// </summary>
 	[Property, Range( 0, 16 )] public int Priority { get; set; } = 0;
@@ -28,12 +33,9 @@ public abstract class Behavior : Component
 	[Property, JsonIgnore, ReadOnly, Group( "Debug" )]
 	protected Dictionary<Type, ScheduleBase> _schedules = new();
 
-	/// <summary>
-	/// Get a layer -- if it doesn't exist, one will be created
-	/// </summary>
-	public T GetLayer<T>() where T : BehaviorLayer, new()
+	protected override void OnAwake()
 	{
-		return GetOrAddComponent<T>();
+		Npc = GetComponent<Npc>();
 	}
 
 	/// <summary>

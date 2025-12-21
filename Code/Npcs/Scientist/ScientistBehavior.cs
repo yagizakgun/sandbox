@@ -8,23 +8,14 @@ public class ScientistBehavior : Behavior
 	private Vector3? _lastTarget;
 	private TimeSince _timeSinceLostVision;
 
-	[RequireComponent]
-	public SensesLayer Senses { get; private set; }
-
-	[RequireComponent]
-	public NavigationLayer Locomotion { get; private set; }
-
-	[RequireComponent]
-	public AnimationLayer Animation { get; private set; }
-
 	public override ScheduleBase Run()
 	{
 		//
 		// Update last known position if we can see a target
 		//
-		if ( Senses.VisibleTargets.Any() )
+		if ( Npc.Senses.VisibleTargets.Any() )
 		{
-			var visible = Senses.GetNearestVisible();
+			var visible = Npc.Senses.GetNearestVisible();
 			if ( visible.IsValid() )
 			{
 				_lastTarget = visible.WorldPosition;
@@ -35,16 +26,16 @@ public class ScientistBehavior : Behavior
 		//
 		// Is someone in our face?
 		//
-		if ( Senses.DistanceToNearest <= Senses.PersonalSpace && Senses.Nearest.IsValid() )
+		if ( Npc.Senses.DistanceToNearest <= Npc.Senses.PersonalSpace && Npc.Senses.Nearest.IsValid() )
 		{
 			var flee = GetSchedule<ScientistFleeSchedule>();
-			flee.Source = Senses.Nearest;
+			flee.Source = Npc.Senses.Nearest;
 			return flee;
 		}
 
-		if ( Senses.VisibleTargets.Any() )
+		if ( Npc.Senses.VisibleTargets.Any() )
 		{
-			var visible = Senses.GetNearestVisible();
+			var visible = Npc.Senses.GetNearestVisible();
 			if ( visible.IsValid() )
 			{
 				var investigate = GetSchedule<ScientistInvestigateSchedule>();

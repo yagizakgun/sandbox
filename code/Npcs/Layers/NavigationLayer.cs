@@ -3,15 +3,19 @@ namespace Sandbox.Npcs.Layers;
 /// <summary>
 /// Handles Npc navigation
 /// </summary>
-public class NavigationLayer : BehaviorLayer
+public class NavigationLayer : BaseNpcLayer
 {
-	[RequireComponent]
 	public NavMeshAgent Agent { get; private set; }
 
 	public Vector3? MoveTarget { get; private set; }
-
-	[Property]
 	public float StopDistance { get; private set; } = 10f;
+
+	public NavigationLayer() { }
+
+	protected override void OnStart()
+	{
+		Agent = Npc.GetComponent<NavMeshAgent>();
+	}
 
 	/// <summary>
 	/// Command this layer to move to a target
@@ -27,13 +31,11 @@ public class NavigationLayer : BehaviorLayer
 		}
 	}
 
-	protected override void OnUpdate()
+	public override void Update()
 	{
-		// TODO: is this suitable?
-		var animation = GetComponentInChildren<AnimationLayer>();
-		if ( animation.IsValid() )
+		if ( Agent.IsValid() )
 		{
-			animation.SetMove( Agent.Velocity, Agent.WorldRotation );
+			Npc.Animation.SetMove( Agent.Velocity, Agent.WorldRotation );
 		}
 	}
 
@@ -44,7 +46,7 @@ public class NavigationLayer : BehaviorLayer
 	{
 		if ( !MoveTarget.HasValue ) return true;
 
-		var distance = WorldPosition.Distance( MoveTarget.Value );
+		var distance = Npc.WorldPosition.Distance( MoveTarget.Value );
 		return distance <= StopDistance;
 	}
 

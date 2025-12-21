@@ -6,6 +6,7 @@
 public abstract class ScheduleBase
 {
 	public Behavior Behavior { get; private set; }
+	public Npc Npc => Behavior.Npc;
 	protected GameObject GameObject => Behavior.GameObject;
 
 	private List<TaskBase> _tasks = new();

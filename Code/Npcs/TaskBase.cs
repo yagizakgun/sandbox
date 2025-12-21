@@ -9,14 +9,12 @@ public abstract class TaskBase
 {
 	protected ScheduleBase Schedule { get; private set; }
 	protected Behavior Behavior => Schedule.Behavior;
+	protected Npc Npc => Schedule.Npc;
 
 	/// <summary>
 	/// What is the current status of this task?
 	/// </summary>
 	protected TaskStatus Status { get; private set; }
-
-	/// <inheritdoc cref="Behavior.GetLayer"/>
-	protected T GetLayer<T>() where T : BehaviorLayer, new() => Behavior?.GetLayer<T>();
 
 	internal void Initialize( ScheduleBase schedule )
 	{

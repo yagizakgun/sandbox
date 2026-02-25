@@ -28,8 +28,6 @@ public record struct TraceAttackInfo( GameObject Target, float Damage, TagSet Ta
 
 public partial class BaseCarryable : Component, IKillIcon
 {
-	[Property, Feature( "Inventory" ), Range( 0, 4 )] public int InventorySlot { get; set; } = 0;
-	[Property, Feature( "Inventory" )] public int InventoryOrder { get; set; } = 0;
 	[Property, Feature( "Inventory" )] public string DisplayName { get; set; } = "My Weapon";
 	[Property, Feature( "Inventory" ), TextArea] public Texture DisplayIcon { get; set; }
 
@@ -91,6 +89,11 @@ public partial class BaseCarryable : Component, IKillIcon
 		}
 	}
 
+	/// <summary>
+	/// The inventory slot this item is assigned to, or -1 if unassigned.
+	/// Set at runtime when picked up.
+	/// </summary>
+	[Sync] public int AssignedSlot { get; set; } = -1;
 
 	/// <summary>
 	/// Can we switch to this?
@@ -117,8 +120,6 @@ public partial class BaseCarryable : Component, IKillIcon
 		var player = Owner;
 		var controller = player?.Controller;
 		if ( controller is null ) return;
-
-		controller.Renderer.Set( "holdtype", (int)HoldType );
 
 		if ( player.IsLocalPlayer )
 		{

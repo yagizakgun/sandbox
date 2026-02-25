@@ -1,3 +1,5 @@
+@import "/UI/Theme.scss";
+
 Vitals
 {
 	position: absolute;
@@ -5,13 +7,13 @@ Vitals
 	height: 100%;
 	pointer-events: none;
 	font-family: Poppins;
-	color: white;
+	color: #cdf;
 
 	.vitals
 	{
 		position: absolute;
-		bottom: 6%;
-		left: 3%;
+		bottom: $deadzone-y;
+		left: $deadzone-x;
 		flex-direction: column-reverse;
 		gap: 8px;
 	}
@@ -20,16 +22,19 @@ Vitals
 	{
 		flex-direction: row;
 		align-items: center;
-		gap: 12px;
+		gap: 16px;
+		padding: 16px;
+		padding-top: 11px;
 
 		.icon
 		{
-			width: 32px;
+			width: 28px;
 			height: 32px;
 			background-size: contain;
 			background-repeat: no-repeat;
 			background-position: center;
 			flex-shrink: 0;
+			margin-top: 6px;
 		}
 
 		.right
@@ -65,14 +70,15 @@ Vitals
 
 		.value
 		{
-			font-size: 28px;
-			font-weight: 700;
+			font-size: 23px;
+			height: 32px;
+			font-weight: 600;
 			text-shadow: 1px 1px 6px black;
 		}
 
 		&.health .bar .fill
 		{
-			background-color: #4c4;
+			background-image: linear-gradient( to right, #cdf, #8ea3ce );
 		}
 
 		&.armour .bar .fill
@@ -84,45 +90,43 @@ Vitals
 	.ammo
 	{
 		position: absolute;
-		bottom: 6%;
-		right: 3%;
+		bottom: $deadzone-y;
+		right: $deadzone-x;
 		flex-direction: column;
 		align-items: flex-end;
-
-		.weapon-name
-		{
-			font-size: 20px;
-			font-weight: 700;
-			opacity: 0.5;
-			text-shadow: 1px 1px 5px black;
-			text-transform: uppercase;
-		}
 
 		.count
 		{
 			flex-direction: row;
-			align-items: baseline;
-			gap: 6px;
+			justify-content: center;
+			align-items: flex-end;
+			gap: 4px;
+			padding: 16px;
+			padding-top: 11px;
+			background-image: linear-gradient( to left, rgba( 0, 0, 0, 0.5 ), rgba( 0, 0, 0, 0.3 ) );
+			border-radius: 8px;
+			backdrop-filter: blur( 20px );
+			border: 0.25px solid rgba( black, 0.1 );
 		}
 
 		.clip
 		{
-			font-size: 48px;
-			height: 60px;
-			font-weight: 700;
+			font-size: 23px;
+			height: 30px;
+			font-weight: 600;
 			text-shadow: 1px 1px 6px black;
 		}
 
 		.separator
 		{
-			font-size: 24px;
+			font-size: 18px;
 			font-weight: 300;
 			opacity: 0.4;
 		}
 
 		.reserve
 		{
-			font-size: 24px;
+			font-size: 18px;
 			font-weight: 500;
 			opacity: 0.6;
 			text-shadow: 1px 1px 4px black;

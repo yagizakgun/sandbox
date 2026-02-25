@@ -13,7 +13,7 @@
             <div class="stat armour">
                 <Image class="icon" Texture=@ArmourIcon />
                 <div class="right">
-                    <label class="value">@Player.Armour.CeilToInt()</label>
+                    <label class="value">@Player.Armour.CeilToInt()%</label>
                     <div class="bar">
                         <div class="fill" style="width: @((int)(Player.Armour / Player.MaxArmour * 100))%"></div>
                     </div>
@@ -23,7 +23,7 @@
         <div class="stat health">
             <Image class="icon" Texture=@HealthIcon />
             <div class="right">
-                <label class="value">@Player.Health.CeilToInt()</label>
+                <label class="value">@Player.Health.CeilToInt()%</label>
                 <div class="bar">
                     <div class="fill" style="width: @((int)(Player.Health / Player.MaxHealth * 100))%"></div>
                 </div>
@@ -34,7 +34,6 @@
     @if ( Weapon.IsValid() && Weapon.UsesAmmo )
     {
         <div class="ammo">
-            <label class="weapon-name">@Weapon.DisplayName</label>
             <div class="count">
                 <label class="clip">@(Weapon.UsesClips ? Weapon.ClipContents : Player.GetAmmoCount( Weapon.AmmoResource ))</label>
                 @if ( Weapon.UsesClips )

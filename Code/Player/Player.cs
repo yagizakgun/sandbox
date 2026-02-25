@@ -216,8 +216,6 @@ public sealed partial class Player : Component, Component.IDamageable, PlayerCon
 
 	void OnControl()
 	{
-		Scene.Get<Inventory>()?.HandleInputOpen();
-
 		if ( Input.Pressed( "die" ) )
 		{
 			KillSelf();

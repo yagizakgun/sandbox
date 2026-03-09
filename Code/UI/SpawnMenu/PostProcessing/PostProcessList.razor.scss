@@ -1,0 +1,88 @@
+.postprocess-icon
+{
+    width: 100%;
+    height: 100%;
+    position: relative;
+    border: 1px solid #08f0;
+    background-color: #7771;
+    flex-direction: column;
+
+    .thumb
+    {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    .bottom-bar
+    {
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 36px;
+        background-color: #0c202fdd;
+        flex-direction: row;
+        align-items: center;
+        padding: 0 8px 0 10px;
+        gap: 6px;
+    }
+
+    .title
+    {
+        flex-grow: 1;
+        font-size: 10px;
+        font-weight: 500;
+        font-family: Poppins;
+        white-space: nowrap;
+        overflow: hidden;
+        color: #cdf;
+    }
+
+    .checkbox
+    {
+        flex-shrink: 0;
+        width: 48px;
+        height: 26px;
+        border-radius: 13px;
+        border: 2px solid #ffffff22;
+        background-color: #0005;
+        cursor: pointer;
+        justify-content: center;
+        align-items: center;
+        font-size: 9px;
+        font-weight: 700;
+        font-family: Poppins;
+        letter-spacing: 0.05em;
+        color: #ffffff55;
+
+        .checkmark { display: none; }
+
+        &.on
+        {
+            border-color: #0af8;
+            background-color: #0af3;
+            color: white;
+        }
+
+        &:hover
+        {
+            border-color: #0aff;
+            background-color: #0af5;
+            color: white;
+        }
+    }
+
+    &.selected
+    {
+        border: 1px solid #08f;
+    }
+
+    &:hover
+    {
+        border: 1px solid #08f8;
+        background-color: #7773;
+
+        .title { color: white; }
+    }
+}

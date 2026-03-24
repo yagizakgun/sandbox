@@ -7,7 +7,18 @@
 
 	<div class="canvas" @ref=_canvas></div>
 
-	<div class="window-stack" @ref=_windowStack @onmousedown="@WindowPress"></div>
+	<div class="inspector-panel @(_editors?.Any( e => e.WasVisible ) == true ? "" : "hidden")" @onmousedown="@WindowPress">
+		<div class="tab-bar">
+			@foreach ( var entry in _editors?.Where( e => e.WasVisible ) ?? [] )
+			{
+				var e = entry;
+				<div class="tab @( _active == e ? "active" : "" )" @onclick="@(() => SetActive( e ))">
+					@e.Editor.TabTitle
+				</div>
+			}
+		</div>
+		<div class="window-stack" @ref=_windowStack></div>
+	</div>
 
 </root>
 
@@ -23,6 +34,7 @@
         public bool WasVisible { get; set; }
     }
     List<EditorEntry> _editors;
+    EditorEntry _active;
 
     void InitEditors()
     {
@@ -30,7 +42,8 @@
         _editors = new();
 
         var types = TypeLibrary.GetTypesWithAttribute<InspectorEditorAttribute>()
-            .OrderBy( t => t.Attribute.Type is null ? 1 : 0 );
+            .OrderByDescending( x => x.Type.GetAttribute<OrderAttribute>()?.Value ?? 0 )
+            .ThenBy( t => t.Attribute.Type is null ? 1 : 0 );
 
         foreach ( var (typeDesc, attr) in types )
         {
@@ -41,30 +54,20 @@
             editor.SetClass( "hidden", true );
             editor.Parent = _windowStack;
 
-            var entry = new EditorEntry( editor );
-            editor.OnToggleExpanded = () => AccordionToggle( editor );
-
-            _editors.Add( entry );
+            _editors.Add( new EditorEntry( editor ) );
         }
     }
 
-    void AccordionToggle( InspectorEditorBase target )
+    void SetActive( EditorEntry entry )
     {
-        bool expanding = !target.IsExpanded;
-        var visibleCount = _editors?.Count( e => e.WasVisible ) ?? 0;
+        _active = entry;
+        ApplyVisibility();
+    }
 
-        if ( visibleCount >= 3 )
-        {
-            // Strict accordion — collapse all, expand only target
-            foreach ( var e in _editors )
-                e.Editor.IsExpanded = false;
-            target.IsExpanded = expanding;
-        }
-        else
-        {
-            // Free toggle — each panel independent
-            target.IsExpanded = expanding;
-        }
+    void ApplyVisibility()
+    {
+        foreach ( var e in _editors )
+            e.Editor.SetClass( "hidden", !( e.WasVisible && e == _active ) );
     }
 
     HashSet<GameObject> _lastSelected = new();
@@ -79,7 +82,6 @@
         {
             bool visible = entry.Editor.TrySetTarget( _selected );
             if ( visible != entry.WasVisible ) changed = true;
-            entry.Editor.SetClass( "hidden", !visible );
             entry.WasVisible = visible;
         }
 
@@ -90,33 +92,16 @@
         }
 
         if ( changed )
-            ApplyExpansionRules();
-    }
-
-    void ApplyExpansionRules()
-    {
-        var visible = _editors.Where( e => e.WasVisible ).ToList();
-        bool accordion = visible.Count >= 3;
-
-        foreach ( var e in visible )
-            e.Editor.ShowAccordion = accordion;
-
-        if ( accordion )
         {
-            // Collapse all except the last
-            foreach ( var e in visible )
-                e.Editor.IsExpanded = false;
-            visible[^1].Editor.IsExpanded = true;
-        }
-        else
-        {
-            // All expanded, no accordion chrome
-            foreach ( var e in visible )
-                e.Editor.IsExpanded = true;
+            var visible = _editors.Where( e => e.WasVisible ).ToList();
+            if ( _active == null || !_active.WasVisible )
+                _active = visible.LastOrDefault();
+
+            ApplyVisibility();
         }
     }
 
-    protected override int BuildHash() => HashCode.Combine( hovered, _selected.Count );
+    protected override int BuildHash() => HashCode.Combine( hovered, _selected.Count, _active );
 
     public override void Tick()
     {
@@ -264,6 +249,5 @@
 		panelEvent.StopPropagation();
 	}
 }
-
 
 

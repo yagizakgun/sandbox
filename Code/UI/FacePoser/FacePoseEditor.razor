@@ -5,9 +5,7 @@
 @namespace Sandbox
 
 <root>
-    <InspectorEditor IsExpanded=@IsExpanded ShowAccordion=@ShowAccordion OnToggleExpanded=@ToggleExpanded>
-
-        <Header><h2>😶 Face Poser</h2></Header>
+    <InspectorEditor>
 
         <Body>
             @foreach (var group in Groups)
@@ -37,6 +35,8 @@
 
 @code
 {
+    public override string TabTitle => "😶 Face Poser";
+
     public SkinnedModelRenderer Target { get; private set; }
 
     Dictionary<string, float> _pendingMorphs = new();

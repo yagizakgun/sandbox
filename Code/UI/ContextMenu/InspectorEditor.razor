@@ -4,39 +4,12 @@
 @namespace Sandbox
 
 <root>
-	<div class="header" @onclick=@HandleHeaderClick>
-		@Header
-		@if ( ShowAccordion )
-		{
-			<div class="expand-arrow">@(IsExpanded ? "▾" : "▸")</div>
-		}
-	</div>
-
-	@if ( IsExpanded || !ShowAccordion )
-	{
-		@if ( Body != null ) { <div class="body">@Body</div> }
-		@if ( Footer != null ) { <div class="footer">@Footer</div> }
-	}
+	@if ( Body != null ) { <div class="body">@Body</div> }
+	@if ( Footer != null ) { <div class="footer">@Footer</div> }
 </root>
 
 @code
 {
-	[Parameter] public RenderFragment Header { get; set; }
 	[Parameter] public RenderFragment Body { get; set; }
 	[Parameter] public RenderFragment Footer { get; set; }
-
-	[Parameter] public bool IsExpanded { get; set; }
-	[Parameter] public bool ShowAccordion { get; set; }
-	[Parameter] public Action OnToggleExpanded { get; set; }
-
-	protected override void OnParametersSet()
-	{
-		base.OnParametersSet();
-		SetClass( "accordion", ShowAccordion );
-	}
-
-	void HandleHeaderClick()
-	{
-		if ( ShowAccordion ) OnToggleExpanded?.Invoke();
-	}
 }

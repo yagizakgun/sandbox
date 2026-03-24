@@ -5,9 +5,7 @@
 @namespace Sandbox
 
 <root>
-    <InspectorEditor IsExpanded=@IsExpanded ShowAccordion=@ShowAccordion OnToggleExpanded=@ToggleExpanded>
-
-        <Header><h2>👗 Dresser</h2></Header>
+    <InspectorEditor>
 
         <Footer>
             <Button class="menu-action primary" Text="Randomize" Icon="🎲" onclick=@DoRandomize></Button>
@@ -19,6 +17,8 @@
 
 @code
 {
+    public override string TabTitle => "👗 Dresser";
+
     public Dresser Target { get; private set; }
 
     public override bool TrySetTarget(List<GameObject> selection)

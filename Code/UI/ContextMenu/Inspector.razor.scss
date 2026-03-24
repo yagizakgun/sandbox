@@ -18,15 +18,56 @@ Inspector
     }
 }
 
-Inspector .window-stack
+Inspector .inspector-panel
 {
     position: absolute;
     right: $deadzone-x;
     bottom: $deadzone-y;
     width: 500px;
     flex-direction: column;
-    gap: 8px;
     pointer-events: none;
+
+    &.hidden
+    {
+        display: none;
+    }
+}
+
+Inspector .tab-bar
+{
+    flex-direction: row;
+    gap: 2px;
+    padding: 0 8px;
+    pointer-events: all;
+}
+
+Inspector .tab
+{
+    padding: 5px 14px;
+    border-radius: 6px 6px 0 0;
+    background-color: #222222c9;
+    border: 1px solid #444;
+    border-bottom: none;
+    cursor: pointer;
+    color: rgba( 255, 255, 255, 0.5 );
+    pointer-events: all;
+
+    &:hover
+    {
+        background-color: #222222f1;
+        color: rgba( 255, 255, 255, 0.75 );
+    }
+
+    &.active
+    {
+        background-color: #222222ee;
+        color: white;
+    }
+}
+
+Inspector .window-stack
+{
+    pointer-events: all;
 }
 
 Inspector .window-stack .window
@@ -35,7 +76,7 @@ Inspector .window-stack .window
     border: 1px solid #444;
     padding: 1rem;
     width: 500px;
-    border-radius: 8px;
+    border-radius: 8px 8px 8px 8px;
     pointer-events: all;
     backdrop-filter: blur( 10px );
     z-index: 200;

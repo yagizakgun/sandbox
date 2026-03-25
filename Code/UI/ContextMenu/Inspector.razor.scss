@@ -87,6 +87,27 @@ Inspector .window-stack .window
     }
 }
 
+Inspector .window-stack .window .body
+{
+    flex-direction: column;
+    flex-grow: 1;
+    overflow-y: scroll;
+    gap: 2px;
+}
+
+Inspector .window-stack .window .footer
+{
+    flex-direction: row;
+    gap: 6px;
+    padding-top: 8px;
+    flex-shrink: 0;
+
+    Button
+    {
+        flex-grow: 1;
+    }
+}
+
 Inventory.hidden
 {
     opacity: 0;

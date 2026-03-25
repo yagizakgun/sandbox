@@ -2,13 +2,12 @@
 @using Sandbox.UI;
 @attribute [InspectorEditor(null)]
 @attribute [Order(100)]
-@inherits InspectorEditorBase
+@inherits Panel
 @namespace Sandbox
+@implements IInspectorEditor
 
 <root>
-    <InspectorEditor>
-
-        <Body>
+    <div class="body">
             @if (Target == null || Target.Count == 0)
             {
                 <div class="empty-state">Click on an object to inspect it.</div>
@@ -41,14 +40,12 @@
                     }
                 }
             }
-        </Body>
-
-    </InspectorEditor>
+    </div>
 </root>
 
 @code
 {
-    public override string TabTitle => Target?.Count switch
+    public string Title => Target?.Count switch
     {
         null or < 2 => "📦 Object",
         _ => $"📦 Object (+{Target.Count - 1})"
@@ -56,7 +53,7 @@
 
     public List<GameObject> Target { get; private set; }
 
-    public override bool TrySetTarget(List<GameObject> selection)
+    public bool TrySetTarget(List<GameObject> selection)
     {
         var newTarget = selection.Any() ? selection : null;
 

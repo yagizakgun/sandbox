@@ -1,13 +1,12 @@
 @using Sandbox;
 @using Sandbox.UI;
 @attribute [InspectorEditor(typeof(SkinnedModelRenderer))]
-@inherits InspectorEditorBase
+@inherits Panel
 @namespace Sandbox
+@implements IInspectorEditor
 
 <root>
-    <InspectorEditor>
-
-        <Body>
+    <div class="body">
             @foreach (var group in Groups)
             {
                 <div class="group-header">@group.Key</div>
@@ -22,20 +21,18 @@
                     </FacePoseMorphRow>
                 }
             }
-        </Body>
+    </div>
 
-        <Footer>
+    <div class="footer">
             <Button class="menu-action primary" Text="Reset" Icon="🧹" onclick=@ClearAll></Button>
             <Button class="menu-action primary" Text="Randomize" Icon="🎲" onclick=@Randomize></Button>
             <Button class="menu-action primary" Text="Presets" Icon="📋" onclick=@OpenPresetsMenu></Button>
-        </Footer>
-
-    </InspectorEditor>
+    </div>
 </root>
 
 @code
 {
-    public override string TabTitle => "😶 Face Poser";
+    public string Title => "😶 Face Poser";
 
     public SkinnedModelRenderer Target { get; private set; }
 
@@ -62,7 +59,7 @@
         FlushPendingMorphs();
     }
 
-    public override bool TrySetTarget(List<GameObject> selection)
+    public bool TrySetTarget(List<GameObject> selection)
     {
         SkinnedModelRenderer smr = null;
         foreach (var go in selection)

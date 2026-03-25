@@ -13,7 +13,7 @@
 			{
 				var e = entry;
 				<div class="tab @( _active == e ? "active" : "" )" @onclick="@(() => SetActive( e ))">
-					@e.Editor.TabTitle
+					@e.Editor.Title
 				</div>
 			}
 		</div>
@@ -29,7 +29,7 @@
     Panel _canvas = default;
     Panel _windowStack = default;
 
-    record EditorEntry( InspectorEditorBase Editor )
+    record EditorEntry( IInspectorEditor Editor )
     {
         public bool WasVisible { get; set; }
     }
@@ -47,12 +47,12 @@
 
         foreach ( var (typeDesc, attr) in types )
         {
-            var editor = typeDesc.Create<InspectorEditorBase>();
-            if ( editor == null ) continue;
+            var editor = typeDesc.Create<IInspectorEditor>();
+            if ( editor is not Panel editorPanel ) continue;
 
-            editor.AddClass( "window" );
-            editor.SetClass( "hidden", true );
-            editor.Parent = _windowStack;
+            editorPanel.AddClass( "window" );
+            editorPanel.SetClass( "hidden", true );
+            editorPanel.Parent = _windowStack;
 
             _editors.Add( new EditorEntry( editor ) );
         }
@@ -67,7 +67,7 @@
     void ApplyVisibility()
     {
         foreach ( var e in _editors )
-            e.Editor.SetClass( "hidden", !( e.WasVisible && e == _active ) );
+            (e.Editor as Panel)?.SetClass( "hidden", !( e.WasVisible && e == _active ) );
     }
 
     HashSet<GameObject> _lastSelected = new();

@@ -1,27 +1,24 @@
 @using Sandbox;
 @using Sandbox.UI;
 @attribute [InspectorEditor(typeof(Dresser))]
-@inherits InspectorEditorBase
+@inherits Panel
 @namespace Sandbox
+@implements IInspectorEditor
 
 <root>
-    <InspectorEditor>
-
-        <Footer>
+    <div class="footer">
             <Button class="menu-action primary" Text="Randomize" Icon="🎲" onclick=@DoRandomize></Button>
             <Button class="menu-action primary" Text="Clear" Icon="🧹" onclick=@DoClear></Button>
-        </Footer>
-
-    </InspectorEditor>
+    </div>
 </root>
 
 @code
 {
-    public override string TabTitle => "👗 Dresser";
+    public string Title => "👗 Dresser";
 
     public Dresser Target { get; private set; }
 
-    public override bool TrySetTarget(List<GameObject> selection)
+    public bool TrySetTarget(List<GameObject> selection)
     {
         Dresser found = null;
         foreach (var go in selection)
